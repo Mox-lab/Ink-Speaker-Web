@@ -15,19 +15,22 @@
 # ============================================================
 
 # ---------- 阶段 1:构建 ----------
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
-# 启用 pnpm(corepack 是 node 20 自带的)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 国内 npm 镜像(必须先配,否则 corepack prepare 拉不到 pnpm 二进制)
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com \
+    npm_config_registry=https://registry.npmmirror.com
+
+# 启用 pnpm 10(corepack 走上面配的 npmmirror;pnpm 10 兼容 lockfileVersion 9.0)
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /workspace
 
 # 先拷贝 lock 文件 + package.json,利用 Docker 层缓存加速
 COPY package.json pnpm-lock.yaml ./
 
-# 装依赖(用国内 npm 镜像加速)
-RUN pnpm config set registry https://registry.npmmirror.com && \
-    pnpm install --frozen-lockfile
+# 装依赖(镜像已在 ENV 配好)
+RUN pnpm install --frozen-lockfile
 
 # 拷贝源码(.dockerignore 已排除 node_modules / dist / .git)
 COPY . .
