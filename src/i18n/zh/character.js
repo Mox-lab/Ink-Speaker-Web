@@ -1,0 +1,32 @@
+/**
+ * 人物页词条 —— 中文
+ * @author songshan.li (ID: 17099618)
+ */
+export const character = {
+  'character.heading': '人物抽取',
+  'character.subheading': '自动构建角色档案与关系图谱',
+  'character.graph': '图谱',
+  'character.cards': '卡片',
+  'character.sourceText': '原文片段',
+  'character.sourcePlaceholder': '粘贴小说片段(支持多角色场景)...',
+  'character.charHint': '建议 500 字以上,以获得更准确的人物识别',
+  'character.history': '历史人物',
+  'character.saveAll': '保存全部',
+  'character.extract': '执行抽取',
+  'character.extracting': '抽取中',
+  'character.textRequired': '请输入小说文本',
+  'character.extracted': '已抽取 {n} 个角色',
+  'character.extractFailed': '抽取失败',
+  'character.reset': '已清空',
+  'character.addNew': '新增角色',
+  'character.graphTitle': '人物关系图谱',
+  'character.cardsTitle': '共 {n} 个角色(可编辑)',
+  'character.awaiting': '等待抽取',
+  'character.raw': '原始返回',
+  'character.loadHistoryFailed': '加载历史失败',
+  'character.charEmpty': '角色列表为空',
+  'character.loaded': '已载入 {name}',
+  'character.deleteFailed': '删除失败',
+  'character.historyTitle': '人物历史',
+  'character.graphEmpty': '图谱为空',
+};

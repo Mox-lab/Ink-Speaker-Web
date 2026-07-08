@@ -1,0 +1,42 @@
+# ============================================================
+# Ink Speaker Web .dockerignore
+# ============================================================
+# 排除这些目录,避免它们被发送到 Docker daemon,加速构建
+# ============================================================
+
+# 依赖(容器内重新 pnpm install)
+node_modules
+
+# 构建产物(容器内重新 pnpm build)
+dist
+dist-ssr
+
+# Git
+.git
+.gitignore
+
+# IDE / OS
+.idea
+.vscode
+.DS_Store
+*.iml
+
+# 日志
+*.log
+logs
+
+# 环境变量(敏感)
+.env
+.env.local
+.env.*.local
+
+# 缓存
+.vite
+.cache
+
+# 文档(不打进镜像)
+README.md
+docs
+
+# 快捷方式
+*.lnk

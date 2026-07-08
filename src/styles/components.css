@@ -1,0 +1,273 @@
+/**
+ * 组件结构基类 —— 仅定义布局结构和通过 CSS 变量驱动的视觉属性。
+ * 每套主题在各自的 theme-*.css 文件中对视觉细节进行重新设计。
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+
+/* ================ 玻璃面板 ================ */
+
+.sf-panel {
+  background: var(--sf-panel);
+  border: 1px solid var(--sf-border);
+  backdrop-filter: blur(14px);
+  position: relative;
+}
+
+/* 带 HUD 角标的面板(角标样式由各主题定义) */
+.sf-panel-hud {
+  background: var(--sf-panel);
+  border: 1px solid var(--sf-border);
+  backdrop-filter: blur(14px);
+  position: relative;
+}
+.sf-panel-hud::before,
+.sf-panel-hud::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--sf-accent);
+  pointer-events: none;
+}
+.sf-panel-hud::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+.sf-panel-hud::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ================ 输入框 ================ */
+
+.sf-input {
+  background: var(--sf-input-bg);
+  border: 1px solid var(--sf-border);
+  color: var(--sf-text);
+  border-radius: var(--sf-radius-input, 4px);
+  padding: 10px 14px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+.sf-input::placeholder { color: var(--sf-text-dim); }
+.sf-input:focus {
+  border-color: var(--sf-accent);
+  background: var(--sf-input-bg-focus);
+}
+
+/* ================ 按钮 ================ */
+
+/* 主按钮 */
+.sf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.15), rgba(var(--sf-accent2-r), var(--sf-accent2-g), var(--sf-accent2-b), 0.1));
+  border: 1px solid var(--sf-accent);
+  color: var(--sf-accent);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--sf-radius-btn, 4px);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.sf-btn:hover {
+  color: var(--sf-heading-color);
+}
+.sf-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 次级按钮 */
+.sf-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--sf-border);
+  color: var(--sf-text-dim);
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: var(--sf-radius-btn-ghost, 4px);
+  transition: all 0.2s ease;
+}
+.sf-btn-ghost:hover {
+  border-color: var(--sf-accent);
+  color: var(--sf-accent);
+  background: rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.06);
+}
+
+/* ================ 标签 / chip ================ */
+
+.sf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.08);
+  border: 1px solid var(--sf-border);
+  color: var(--sf-accent);
+  border-radius: var(--sf-radius-chip, 2px);
+}
+
+/* ================ 标题装饰 ================ */
+
+.sf-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--sf-heading-color);
+}
+.sf-heading::before {
+  content: "";
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--sf-accent), var(--sf-accent-2));
+}
+
+/* ================ 状态点 ================ */
+
+.sf-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sf-green);
+  animation: sf-pulse 2s ease-in-out infinite;
+}
+
+/* ================ 加载条 ================ */
+
+.sf-loader-bar {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  background: rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.1);
+  overflow: hidden;
+}
+.sf-loader-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--sf-accent), transparent);
+  animation: sf-slide 1.4s ease-in-out infinite;
+}
+
+/* ================ 卡片扫描效果 ================ */
+
+.sf-scan {
+  position: relative;
+  overflow: hidden;
+}
+.sf-scan::after {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.06), transparent);
+  transition: top 0.6s ease;
+}
+.sf-scan:hover::after { top: 100%; }
+
+/* ================ 登录页大标题 ================ */
+
+.sf-ink-title {
+  font-family: var(--sf-font-title);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--sf-heading-color);
+}
+
+/* ================ HUD 装饰角标 ================ */
+
+.sf-corners {
+  position: relative;
+}
+.sf-corners::before,
+.sf-corners::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--sf-accent);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.sf-corners::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+.sf-corners::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ================ 登录页品牌面板 ================ */
+
+.sf-login-brand {
+  position: relative;
+  background: linear-gradient(135deg, var(--sf-panel-solid) 0%, var(--sf-panel) 100%);
+  border-right: 1px solid var(--sf-border);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+/* 品牌面板竖向装饰光带 */
+.sf-brand-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--sf-accent), transparent);
+  opacity: 0.4;
+}
+
+/* ================ 登录输入框组 ================ */
+
+.sf-input-group {
+  position: relative;
+}
+.sf-input-group .sf-input {
+  padding-left: 40px;
+}
+.sf-input-group > svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--sf-text-dim);
+  transition: color 0.2s ease;
+  pointer-events: none;
+}
+.sf-input-group:focus-within > svg {
+  color: var(--sf-accent);
+}
+
+/* ================ 工具动画类 ================ */
+
+.sf-flicker { animation: sf-flicker 3s ease-in-out infinite; }

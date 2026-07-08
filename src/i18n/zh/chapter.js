@@ -1,0 +1,38 @@
+/**
+ * 章节页词条 —— 中文
+ * @author songshan.li (ID: 17099618)
+ */
+export const chapter = {
+  'chapter.heading': '章节生成',
+  'chapter.subheading': '基于大纲与目标字数,AI 生成完整章节正文',
+  'chapter.targetWords': '目标字数',
+  'chapter.chapterNo': '章节号',
+  'chapter.session': '会话',
+  'chapter.title': '标题',
+  'chapter.titlePlaceholder': '章节标题(留空则用 chapterNo 自动生成)',
+  'chapter.skill': '技能',
+  'chapter.skillAuto': '自动匹配',
+  'chapter.loadFromOutline': '从激活大纲载入',
+  'chapter.autoMatch': '自动匹配命中',
+  'chapter.outline': '大纲',
+  'chapter.outlinePlaceholder': '粘贴本章节的大纲:场景、人物、冲突、关键转折... 或点击「从激活大纲载入」',
+  'chapter.history': '历史章节',
+  'chapter.review': '审查',
+  'chapter.generate': '执行生成',
+  'chapter.generating': '生成中',
+  'chapter.outlineRequired': '请输入章节大纲',
+  'chapter.generated': '章节已生成',
+  'chapter.generatedWithSkill': '章节已生成 · 命中技能:{name}',
+  'chapter.generateFailed': '生成失败',
+  'chapter.reset': '已清空',
+  'chapter.chapterTitle': '第 {n} 章 · {title}',
+  'chapter.chapterUntitled': '第 {n} 章 · (未命名)',
+  'chapter.saveLabel': '保存(第{n}章)',
+  'chapter.placeholder': '(尚未生成正文)',
+  'chapter.willRender': '章节正文将在此显示',
+  'chapter.historyTitle': '章节历史',
+  'chapter.loadChapterFailed': '加载失败',
+  'chapter.chapterLoaded': '已加载第 {n} 章',
+  'chapter.deleteFailed': '删除失败',
+  'chapter.reviewTitle': '审查问题',
+};

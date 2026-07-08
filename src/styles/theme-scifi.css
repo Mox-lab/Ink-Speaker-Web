@@ -1,0 +1,190 @@
+/**
+ * 主题一:科幻风 (Sci-Fi)
+ * 深空黑 + 青蓝荧光 + 极光紫 + HUD 网格 + 扫描线 + 霓虹辉光
+ *
+ * 设计语言:赛博朋克 HUD 界面
+ *   - 尖锐边角(2-4px 圆角)
+ *   - 霓虹辉光阴影(彩色,非柔和)
+ *   - HUD 角标装饰
+ *   - 网格背景 + CRT 扫描线
+ *   - 等宽字体
+ *   - 全大写按钮文字
+ *   - 流光扫过按钮 hover
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+
+/* ================ 变量定义(默认主题) ================ */
+:root,
+[data-theme="scifi"] {
+  color-scheme: dark;
+
+  /* 基础色板 */
+  --sf-bg: #03060d;
+  --sf-bg-2: #060b18;
+  --sf-panel: rgba(8, 16, 30, 0.65);
+  --sf-panel-solid: rgba(8, 16, 30, 0.9);
+  --sf-border: rgba(56, 230, 255, 0.18);
+  --sf-border-strong: rgba(56, 230, 255, 0.45);
+  --sf-cyan: #38e6ff;
+  --sf-cyan-soft: #5cf2ff;
+  --sf-blue: #4d7cff;
+  --sf-purple: #a06cff;
+  --sf-green: #4dffb8;
+  --sf-amber: #ffc857;
+  --sf-text: #d9e6ff;
+  --sf-text-dim: #6b88b3;
+
+  /* 主题感知别名 */
+  --sf-accent: var(--sf-cyan);
+  --sf-accent-soft: var(--sf-cyan-soft);
+  --sf-accent-2: var(--sf-blue);
+  --sf-heading-color: #ffffff;
+
+  /* RGB 通道 */
+  --sf-accent-r: 56;
+  --sf-accent-g: 230;
+  --sf-accent-b: 255;
+  --sf-accent2-r: 77;
+  --sf-accent2-g: 124;
+  --sf-accent2-b: 255;
+  --sf-glow1-r: 56;
+  --sf-glow1-g: 230;
+  --sf-glow1-b: 255;
+  --sf-glow2-r: 160;
+  --sf-glow2-g: 108;
+  --sf-glow2-b: 255;
+  --sf-grid-r: 56;
+  --sf-grid-g: 230;
+  --sf-grid-b: 255;
+  --sf-scan-r: 56;
+  --sf-scan-g: 230;
+  --sf-scan-b: 255;
+
+  /* 输入框 */
+  --sf-input-bg: rgba(3, 6, 13, 0.7);
+  --sf-input-bg-focus: rgba(3, 6, 13, 0.9);
+
+  /* 装饰效果 */
+  --sf-grid-opacity: 0.04;
+  --sf-scan-opacity: 0.012;
+  --sf-scan-size: 4px;
+
+  /* 字体 */
+  --sf-font-base: "JetBrains Mono", ui-monospace, "SFMono-Regular", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --sf-font-title: "STXingkai", "华文行楷", "Xingkai SC", "楷体", "KaiTi", "STKaiti", cursive;
+}
+
+/* ================ 背景效果:HUD 网格 ================ */
+[data-theme="scifi"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(var(--sf-grid-r), var(--sf-grid-g), var(--sf-grid-b), var(--sf-grid-opacity)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--sf-grid-r), var(--sf-grid-g), var(--sf-grid-b), var(--sf-grid-opacity)) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* ================ 背景效果:CRT 扫描线 ================ */
+[data-theme="scifi"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent calc(var(--sf-scan-size) - 1px),
+    rgba(var(--sf-scan-r), var(--sf-scan-g), var(--sf-scan-b), var(--sf-scan-opacity)) calc(var(--sf-scan-size) - 1px),
+    rgba(var(--sf-scan-r), var(--sf-scan-g), var(--sf-scan-b), var(--sf-scan-opacity)) var(--sf-scan-size)
+  );
+}
+
+/* ================ 面板:内发光 + 角标渐变 ================ */
+[data-theme="scifi"] .sf-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.05) 0%, transparent 50%);
+}
+
+/* ================ 输入框:霓虹聚焦辉光 ================ */
+[data-theme="scifi"] .sf-input {
+  border-radius: 4px;
+}
+[data-theme="scifi"] .sf-input:focus {
+  box-shadow:
+    0 0 0 1px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.3),
+    0 0 16px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.15);
+}
+
+/* ================ 主按钮:流光扫过 + 霓虹辉光 ================ */
+[data-theme="scifi"] .sf-btn {
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-theme="scifi"] .sf-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.25), transparent);
+  transition: left 0.6s ease;
+}
+[data-theme="scifi"] .sf-btn:hover {
+  background: linear-gradient(135deg, rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.25), rgba(var(--sf-accent2-r), var(--sf-accent2-g), var(--sf-accent2-b), 0.18));
+  box-shadow:
+    0 0 20px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.35),
+    inset 0 0 12px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.1);
+}
+[data-theme="scifi"] .sf-btn:hover::before { left: 100%; }
+
+/* ================ 标签:尖锐角度 ================ */
+[data-theme="scifi"] .sf-chip {
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ================ 标题:霓虹辉光装饰条 ================ */
+[data-theme="scifi"] .sf-heading::before {
+  box-shadow: 0 0 12px var(--sf-accent);
+}
+
+/* ================ 状态点:霓虹辉光 ================ */
+[data-theme="scifi"] .sf-dot {
+  box-shadow: 0 0 8px var(--sf-green);
+}
+
+/* ================ 大标题:行楷 + 多层霓虹文字阴影 ================ */
+[data-theme="scifi"] .sf-ink-title {
+  letter-spacing: 0.25em;
+  text-shadow:
+    0 0 18px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.35),
+    0 0 36px rgba(var(--sf-accent2-r), var(--sf-accent2-g), var(--sf-accent2-b), 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+  -webkit-text-stroke: 0.3px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.18);
+  filter: drop-shadow(0 0 8px rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.25));
+}
+
+/* ================ 品牌面板:内部网格层 ================ */
+[data-theme="scifi"] .sf-login-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(var(--sf-grid-r), var(--sf-grid-g), var(--sf-grid-b), calc(var(--sf-grid-opacity) * 0.75)) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--sf-grid-r), var(--sf-grid-g), var(--sf-grid-b), calc(var(--sf-grid-opacity) * 0.75)) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(180deg, transparent 0%, black 30%, black 70%, transparent 100%);
+  pointer-events: none;
+}

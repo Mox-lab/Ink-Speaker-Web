@@ -1,0 +1,214 @@
+/**
+ * 主题二:Linear 风
+ * 近纯黑 #08090a + 靛紫 #7170ff + 微噪点 + 毛玻璃 + Inter 字体
+ * 参考:linear.app —— 暗色 UI 设计的黄金标准
+ *
+ * 设计语言:精密工程,暗色专业
+ *   - iOS 级平滑圆角(8-12px)
+ *   - 微噪点背景质感
+ *   - 柔和深度阴影(暗色,非彩色辉光)
+ *   - 极细半透描边
+ *   - 无 HUD 角标、无扫描线、无网格
+ *   - Inter 无衬线字体
+ *   - 按钮无大写,字间距收紧
+ *   - 聚焦用 ring 而非 glow
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+
+/* ================ 变量定义 ================ */
+[data-theme="linear"] {
+  color-scheme: dark;
+
+  /* 基础色板 */
+  --sf-bg: #08090a;
+  --sf-bg-2: #0c0d0e;
+  --sf-panel: rgba(15, 16, 17, 0.72);
+  --sf-panel-solid: rgba(15, 16, 17, 0.95);
+  --sf-border: rgba(255, 255, 255, 0.08);
+  --sf-border-strong: rgba(113, 112, 255, 0.4);
+  --sf-cyan: #7170ff;
+  --sf-cyan-soft: #8b8aff;
+  --sf-blue: #5e6ad2;
+  --sf-purple: #9b8aff;
+  --sf-green: #4ade80;
+  --sf-amber: #fbbf24;
+  --sf-text: #f7f8f8;
+  --sf-text-dim: #8a8f98;
+
+  /* 主题感知别名 */
+  --sf-accent: var(--sf-cyan);
+  --sf-accent-soft: var(--sf-cyan-soft);
+  --sf-accent-2: var(--sf-blue);
+  --sf-heading-color: #ffffff;
+
+  /* RGB 通道 */
+  --sf-accent-r: 113;
+  --sf-accent-g: 112;
+  --sf-accent-b: 255;
+  --sf-accent2-r: 94;
+  --sf-accent2-g: 106;
+  --sf-accent2-b: 210;
+  --sf-glow1-r: 113;
+  --sf-glow1-g: 112;
+  --sf-glow1-b: 255;
+  --sf-glow2-r: 94;
+  --sf-glow2-g: 106;
+  --sf-glow2-b: 210;
+  --sf-grid-r: 113;
+  --sf-grid-g: 112;
+  --sf-grid-b: 255;
+  --sf-scan-r: 113;
+  --sf-scan-g: 112;
+  --sf-scan-b: 255;
+
+  /* 输入框 */
+  --sf-input-bg: rgba(8, 9, 10, 0.6);
+  --sf-input-bg-focus: rgba(8, 9, 10, 0.85);
+
+  /* 装饰效果:关闭网格和扫描线 */
+  --sf-grid-opacity: 0;
+  --sf-scan-opacity: 0;
+
+  /* 字体:Inter 无衬线 */
+  --sf-font-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --sf-font-title: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* ================ 背景效果:微噪点纹理 ================ */
+[data-theme="linear"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-size: 256px;
+  opacity: 0.025;
+  mask-image: none;
+}
+
+/* ================ 面板:柔和深度阴影 + 平滑圆角 ================ */
+[data-theme="linear"] .sf-panel,
+[data-theme="linear"] .sf-panel-hud {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 4px 24px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+/* HUD 角标改为极细紫色描边,弱化科幻感 */
+[data-theme="linear"] .sf-panel-hud::before,
+[data-theme="linear"] .sf-panel-hud::after {
+  border-color: rgba(113, 112, 255, 0.3);
+  width: 10px;
+  height: 10px;
+}
+
+/* 移除面板内渐变层 */
+[data-theme="linear"] .sf-panel::before {
+  display: none;
+}
+
+/* ================ 输入框:聚焦 ring ================ */
+[data-theme="linear"] .sf-input {
+  border-radius: 8px;
+}
+[data-theme="linear"] .sf-input:focus {
+  box-shadow: 0 0 0 2px rgba(113, 112, 255, 0.2);
+  border-color: rgba(113, 112, 255, 0.5);
+}
+
+/* ================ 主按钮:微妙渐变 + 无大写 ================ */
+[data-theme="linear"] .sf-btn {
+  background: linear-gradient(135deg, rgba(113, 112, 255, 0.2), rgba(94, 106, 210, 0.12));
+  border: 1px solid rgba(113, 112, 255, 0.35);
+  color: #8b8aff;
+  border-radius: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+[data-theme="linear"] .sf-btn::before {
+  display: none;
+}
+[data-theme="linear"] .sf-btn:hover {
+  background: linear-gradient(135deg, rgba(113, 112, 255, 0.3), rgba(94, 106, 210, 0.2));
+  border-color: rgba(113, 112, 255, 0.6);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(113, 112, 255, 0.2);
+}
+
+/* ================ 次级按钮 ================ */
+[data-theme="linear"] .sf-btn-ghost {
+  border-radius: 8px;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #8a8f98;
+}
+[data-theme="linear"] .sf-btn-ghost:hover {
+  border-color: rgba(113, 112, 255, 0.4);
+  color: #8b8aff;
+  background: rgba(113, 112, 255, 0.06);
+}
+
+/* ================ 标签:圆润,正常大小写 ================ */
+[data-theme="linear"] .sf-chip {
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+  padding: 3px 10px;
+  background: rgba(113, 112, 255, 0.1);
+  border-color: rgba(113, 112, 255, 0.2);
+  color: #8b8aff;
+}
+
+/* ================ 标题:无辉光,简洁装饰条 ================ */
+[data-theme="linear"] .sf-heading {
+  letter-spacing: -0.01em;
+}
+[data-theme="linear"] .sf-heading::before {
+  box-shadow: none;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #7170ff, #5e6ad2);
+}
+
+/* ================ 状态点 ================ */
+[data-theme="linear"] .sf-dot {
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.4);
+}
+
+/* ================ 大标题:Inter 字体,微妙紫色辉光 ================ */
+[data-theme="linear"] .sf-ink-title {
+  font-family: var(--sf-font-base);
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 24px rgba(113, 112, 255, 0.25);
+  -webkit-text-stroke: 0;
+  filter: none;
+}
+
+/* ================ HUD 角标:弱化为极细描边 ================ */
+[data-theme="linear"] .sf-corners::before,
+[data-theme="linear"] .sf-corners::after {
+  border-color: rgba(113, 112, 255, 0.3);
+  width: 12px;
+  height: 12px;
+  opacity: 0.4;
+}
+
+/* ================ 品牌面板:无网格,干净 ================ */
+[data-theme="linear"] .sf-login-brand::before {
+  display: none;
+}
+[data-theme="linear"] .sf-brand-beam {
+  background: linear-gradient(180deg, transparent, rgba(113, 112, 255, 0.3), transparent);
+}
+
+/* ================ 扫描效果:禁用 ================ */
+[data-theme="linear"] .sf-scan::after {
+  display: none;
+}
+
+/* ================ 闪烁文字:静态 ================ */
+[data-theme="linear"] .sf-flicker {
+  animation: none;
+  opacity: 0.3;
+}

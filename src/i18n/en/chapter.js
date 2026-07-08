@@ -1,0 +1,38 @@
+/**
+ * Chapter page strings — English
+ * @author songshan.li (ID: 17099618)
+ */
+export const chapter = {
+  'chapter.heading': 'Chapter Generator',
+  'chapter.subheading': 'AI generates full chapter text based on outline and target word count',
+  'chapter.targetWords': 'TARGET WORDS',
+  'chapter.chapterNo': 'Chapter No',
+  'chapter.session': 'Session',
+  'chapter.title': 'Title',
+  'chapter.titlePlaceholder': 'Chapter title (defaults to chapterNo if empty)',
+  'chapter.skill': 'Skill',
+  'chapter.skillAuto': 'Auto match',
+  'chapter.loadFromOutline': 'Load from active outline',
+  'chapter.autoMatch': 'Auto match →',
+  'chapter.outline': 'Outline',
+  'chapter.outlinePlaceholder': 'Paste this chapter\'s outline: scenes, characters, conflicts, key turns... or click "Load from active outline"',
+  'chapter.history': 'History',
+  'chapter.review': 'Review',
+  'chapter.generate': 'Generate',
+  'chapter.generating': 'Generating',
+  'chapter.outlineRequired': 'Please enter chapter outline',
+  'chapter.generated': 'Chapter generated',
+  'chapter.generatedWithSkill': 'Chapter generated · Skill: {name}',
+  'chapter.generateFailed': 'Generation failed',
+  'chapter.reset': 'Cleared',
+  'chapter.chapterTitle': 'Chapter {n} · {title}',
+  'chapter.chapterUntitled': 'Chapter {n} · (untitled)',
+  'chapter.saveLabel': 'Save (Ch.{n})',
+  'chapter.placeholder': '(Chapter text not generated yet)',
+  'chapter.willRender': 'Chapter text will render here',
+  'chapter.historyTitle': 'Chapter history',
+  'chapter.loadChapterFailed': 'Load failed',
+  'chapter.chapterLoaded': 'Loaded chapter {n}',
+  'chapter.deleteFailed': 'Delete failed',
+  'chapter.reviewTitle': 'Review issues',
+};

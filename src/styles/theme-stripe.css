@@ -1,0 +1,212 @@
+/**
+ * 主题三:Stripe 风
+ * 纯白底 + 靛蓝 #635BFF + 渐变按钮 + 柔和阴影 + Inter 字体
+ * 参考:stripe.com —— 渐变大师,高级感满满
+ *
+ * 设计语言:干净、明亮、可信赖的 SaaS 产品
+ *   - 友好圆角(8-12px)
+ *   - 柔和层叠阴影(灰色,非彩色)
+ *   - 渐变实心按钮(靛蓝渐变)
+ *   - 纯白/浅灰面板
+ *   - 无 HUD 角标、无扫描线、无网格、无噪点
+ *   - Inter 无衬线字体
+ *   - 聚焦用 ring(蓝色半透)
+ *   - 整体通透、留白充足
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+
+/* ================ 变量定义 ================ */
+[data-theme="stripe"] {
+  color-scheme: light;
+
+  /* 基础色板 */
+  --sf-bg: #ffffff;
+  --sf-bg-2: #f6f9fc;
+  --sf-panel: rgba(255, 255, 255, 0.82);
+  --sf-panel-solid: rgba(255, 255, 255, 0.96);
+  --sf-border: rgba(10, 37, 64, 0.1);
+  --sf-border-strong: rgba(99, 91, 255, 0.4);
+  --sf-cyan: #635bff;
+  --sf-cyan-soft: #7a73ff;
+  --sf-blue: #0a2540;
+  --sf-purple: #7a73ff;
+  --sf-green: #00d924;
+  --sf-amber: #ff9500;
+  --sf-text: #0a2540;
+  --sf-text-dim: #687385;
+
+  /* 主题感知别名 */
+  --sf-accent: var(--sf-cyan);
+  --sf-accent-soft: var(--sf-cyan-soft);
+  --sf-accent-2: var(--sf-blue);
+  --sf-heading-color: #0a2540;
+
+  /* RGB 通道 */
+  --sf-accent-r: 99;
+  --sf-accent-g: 91;
+  --sf-accent-b: 255;
+  --sf-accent2-r: 10;
+  --sf-accent2-g: 37;
+  --sf-accent2-b: 64;
+  --sf-glow1-r: 99;
+  --sf-glow1-g: 91;
+  --sf-glow1-b: 255;
+  --sf-glow2-r: 10;
+  --sf-glow2-g: 37;
+  --sf-glow2-b: 64;
+  --sf-grid-r: 10;
+  --sf-grid-g: 37;
+  --sf-grid-b: 64;
+  --sf-scan-r: 99;
+  --sf-scan-g: 91;
+  --sf-scan-b: 255;
+
+  /* 输入框 */
+  --sf-input-bg: rgba(246, 249, 252, 0.8);
+  --sf-input-bg-focus: rgba(255, 255, 255, 0.96);
+
+  /* 装饰效果:无网格、无扫描线 */
+  --sf-grid-opacity: 0;
+  --sf-scan-opacity: 0;
+
+  /* 字体:Inter 无衬线 */
+  --sf-font-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --sf-font-title: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* ================ 背景:纯净无装饰 ================ */
+[data-theme="stripe"] body::before {
+  display: none;
+}
+[data-theme="stripe"] body::after {
+  display: none;
+}
+
+/* ================ 面板:柔和阴影 + 圆润圆角 ================ */
+[data-theme="stripe"] .sf-panel,
+[data-theme="stripe"] .sf-panel-hud {
+  box-shadow: 0 2px 8px rgba(10, 37, 64, 0.06), 0 0 0 1px rgba(10, 37, 64, 0.04);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* HUD 角标改为柔和边框,无科幻感 */
+[data-theme="stripe"] .sf-panel-hud::before,
+[data-theme="stripe"] .sf-panel-hud::after {
+  border-color: rgba(99, 91, 255, 0.25);
+  width: 10px;
+  height: 10px;
+}
+
+/* 移除面板内渐变层 */
+[data-theme="stripe"] .sf-panel::before {
+  display: none;
+}
+
+/* ================ 输入框:浅色 + 聚焦 ring ================ */
+[data-theme="stripe"] .sf-input {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(10, 37, 64, 0.04);
+}
+[data-theme="stripe"] .sf-input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.15);
+  border-color: rgba(99, 91, 255, 0.5);
+}
+
+/* ================ 主按钮:靛蓝渐变实心 ================ */
+[data-theme="stripe"] .sf-btn {
+  background: linear-gradient(135deg, #635bff, #7a73ff);
+  border: none;
+  color: #ffffff;
+  border-radius: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(99, 91, 255, 0.2);
+}
+[data-theme="stripe"] .sf-btn::before {
+  display: none;
+}
+[data-theme="stripe"] .sf-btn:hover {
+  background: linear-gradient(135deg, #7a73ff, #8b8aff);
+  box-shadow: 0 4px 16px rgba(99, 91, 255, 0.3);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ================ 次级按钮:浅色描边 ================ */
+[data-theme="stripe"] .sf-btn-ghost {
+  border-radius: 8px;
+  border: 1px solid rgba(10, 37, 64, 0.15);
+  color: #687385;
+}
+[data-theme="stripe"] .sf-btn-ghost:hover {
+  border-color: #635bff;
+  color: #635bff;
+  background: rgba(99, 91, 255, 0.04);
+}
+
+/* ================ 标签:圆润,正常大小写 ================ */
+[data-theme="stripe"] .sf-chip {
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+  padding: 3px 10px;
+  background: rgba(99, 91, 255, 0.06);
+  border-color: rgba(99, 91, 255, 0.15);
+  color: #635bff;
+}
+
+/* ================ 标题:无辉光,简洁 ================ */
+[data-theme="stripe"] .sf-heading {
+  letter-spacing: -0.02em;
+}
+[data-theme="stripe"] .sf-heading::before {
+  box-shadow: none;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #635bff, #7a73ff);
+}
+
+/* ================ 状态点 ================ */
+[data-theme="stripe"] .sf-dot {
+  box-shadow: 0 0 4px rgba(0, 217, 36, 0.3);
+}
+
+/* ================ 大标题:Inter 字体,无辉光 ================ */
+[data-theme="stripe"] .sf-ink-title {
+  font-family: var(--sf-font-base);
+  letter-spacing: -0.02em;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  filter: none;
+}
+
+/* ================ HUD 角标:极弱或隐藏 ================ */
+[data-theme="stripe"] .sf-corners::before,
+[data-theme="stripe"] .sf-corners::after {
+  border-color: rgba(99, 91, 255, 0.2);
+  width: 12px;
+  height: 12px;
+  opacity: 0.3;
+}
+
+/* ================ 品牌面板:干净白底 ================ */
+[data-theme="stripe"] .sf-login-brand::before {
+  display: none;
+}
+[data-theme="stripe"] .sf-brand-beam {
+  background: linear-gradient(180deg, transparent, rgba(99, 91, 255, 0.2), transparent);
+}
+
+/* ================ 扫描效果:禁用 ================ */
+[data-theme="stripe"] .sf-scan::after {
+  display: none;
+}
+
+/* ================ 闪烁文字:静态 ================ */
+[data-theme="stripe"] .sf-flicker {
+  animation: none;
+  opacity: 0.25;
+}

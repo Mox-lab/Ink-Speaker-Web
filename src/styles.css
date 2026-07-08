@@ -1,0 +1,9 @@
+/**
+ * 样式入口重导出 —— 内容已拆分到 styles/ 目录。
+ * main.jsx 无需修改,仍 import './styles.css'。
+ *
+ * 完整结构见 styles/index.css。
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+@import "./styles/index.css";
