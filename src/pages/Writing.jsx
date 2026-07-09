@@ -54,31 +54,31 @@ export default function Writing() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="border-b border-cyan-400/10 px-8 py-5">
+    <div className="flex sf-h-screen-dynamic flex-col">
+      <header className="border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
         <div className="sf-heading">{t('writing.heading')}</div>
-        <p className="mt-2 pl-4 font-mono text-[11px] tracking-wider text-cyan-300/50">
-          // WRITE · {t('writing.subheading')}
+        <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
+          {t('writing.subheading')}
         </p>
       </header>
 
-      <div className="border-b border-cyan-400/10 px-8 py-3">
-        <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <span className="font-mono text-[10px] tracking-widest text-cyan-300/60">
-            {t('writing.session').toUpperCase()}
+      <div className="border-b border-cyan-400/10 px-4 py-3 sm:px-8">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 sm:gap-3">
+          <span className="text-[11px] tracking-wide text-cyan-300/60">
+            {t('writing.session')}
           </span>
           <input
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
-            className="sf-input flex-1 max-w-[200px]"
+            className="sf-input min-w-0 flex-1 sm:max-w-[200px]"
           />
-          <span className="font-mono text-[10px] tracking-widest text-cyan-300/60">
-            {t('writing.skill').toUpperCase()}
+          <span className="text-[11px] tracking-wide text-cyan-300/60">
+            {t('writing.skill')}
           </span>
           <select
             value={skillId}
             onChange={(e) => setSkillId(e.target.value)}
-            className="sf-input max-w-[180px]"
+            className="sf-input min-w-0 flex-1 sm:max-w-[180px]"
           >
             <option value="">{t('writing.skillAuto')}</option>
             {skills.map((s) => (
@@ -87,25 +87,27 @@ export default function Writing() {
               </option>
             ))}
           </select>
-          <span className="text-[10px] tracking-wider text-white/30">{t('writing.sessionHint')}</span>
+          <span className="hidden text-[10px] tracking-wider text-white/30 sm:inline">
+            {t('writing.sessionHint')}
+          </span>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-auto px-8 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         {history.length === 0 && (
           <div className="flex h-full items-center justify-center text-white/20">
             <div className="text-center">
               <PenLine className="mx-auto mb-3 h-12 w-12 opacity-40" />
-              <div className="font-mono text-xs tracking-widest">// {t('writing.awaiting')}</div>
+              <div className="text-sm tracking-wide text-white/40">{t('writing.awaiting')}</div>
               <div className="mt-1 text-[10px] text-white/30">{t('writing.awaitingHint')}</div>
             </div>
           </div>
         )}
-        <div className="mx-auto max-w-3xl space-y-4">
+        <div className="mx-auto max-w-3xl space-y-4 px-0 sm:px-2">
           {history.map((m, i) => (
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[80%] rounded border px-4 py-3 ${
+                className={`max-w-[85%] sm:max-w-[80%] rounded border px-3 py-2 sm:px-4 sm:py-3 ${
                   m.role === 'user'
                     ? 'border-cyan-300/40 bg-cyan-300/[0.08] text-white shadow-[0_0_16px_rgba(56,230,255,0.15)]'
                     : 'border-cyan-400/15 bg-black/40 text-white/90'
@@ -129,10 +131,10 @@ export default function Writing() {
         </div>
       </div>
 
-      <div className="border-t border-cyan-400/10 px-8 py-4">
+      <div className="border-t border-cyan-400/10 px-4 py-3 sm:px-8 sm:py-4">
         <div className="mx-auto flex max-w-3xl items-end gap-2">
           <div className="flex-1">
-            <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">// {t('chat.message').toUpperCase()}</div>
+            <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">{t('chat.message')}</div>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -145,7 +147,7 @@ export default function Writing() {
           <button
             onClick={send}
             disabled={loading || !message.trim()}
-            className="sf-btn h-[64px] px-4"
+            className="sf-btn h-[56px] px-4 sm:h-[64px]"
             title={t('common.send')}
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

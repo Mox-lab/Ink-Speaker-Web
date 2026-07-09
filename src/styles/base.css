@@ -81,3 +81,50 @@ input, textarea, select {
 .sf-animate-in { animation: sf-title-glow 1.2s ease-out both; }
 .sf-animate-in-delay-1 { animation: sf-title-glow 1.2s ease-out 0.3s both; }
 .sf-animate-in-delay-2 { animation: sf-title-glow 1.2s ease-out 0.6s both; }
+
+/* ================ 移动端适配 ================ */
+
+/* 100vh 修正:iOS Safari 地址栏会导致 100vh 抖动,用 -webkit-fill-available 兜底 */
+.sf-h-screen-dynamic {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* 触控目标最小尺寸(44px iOS HIG / 48dp Material),保证 sf-btn 在小屏可点 */
+@media (max-width: 640px) {
+  .sf-btn {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .sf-btn-ghost {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+  .sf-input {
+    padding: 9px 12px;
+    font-size: 14px; /* ≥16px 防 iOS Safari 自动放大,这里用 14 + -webkit-text-size-adjust 兜底 */
+  }
+  /* 输入框聚焦时禁止 iOS 缩放 */
+  .sf-input:focus {
+    font-size: 14px;
+  }
+  /* sf-heading 标题在小屏缩小 */
+  .sf-heading {
+    font-size: 17px;
+  }
+}
+
+/* 禁止 iOS 在输入聚焦时自动放大 */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* 横向滚动容器:用于 tab / 流程图等小屏需横向滚动的区域 */
+.sf-scroll-x {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}

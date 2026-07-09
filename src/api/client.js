@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 import { STORAGE_KEYS } from '../constants/storage.js';
-import { DEFAULT_NOVEL_ID } from '../constants/app.js';
 
 export const tokenStore = {
   getAccess: () => localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
@@ -18,18 +17,25 @@ export const tokenStore = {
 
 /**
  * 当前活跃 novelId(供请求拦截器注入 X-Novel-Id 头)。
- * <p>默认值为 DEFAULT_NOVEL_ID;后续可由 NovelProvider 切换。</p>
+ * <p>第 6 阶段:默认 null,表示尚未选择小说;业务 API 调用前必须由
+ * NovelContextProvider 通过 setActiveNovelId 设置。</p>
+ * <p>当值为 null 时,请求拦截器不会注入 X-Novel-Id 头,后端会按"未指定小说"
+ * 处理(对全局接口如 /novel CRUD 无影响,对子资源接口会返回 400)。</p>
  */
-let activeNovelId = DEFAULT_NOVEL_ID;
+let activeNovelId = null;
 
 /**
  * 设置当前活跃 novelId(切换小说时调用)。
- * @param {number} id
+ * @param {number|null} id 传 null 清空当前选择
  */
 export function setActiveNovelId(id) {
-  activeNovelId = id || DEFAULT_NOVEL_ID;
+  activeNovelId = id || null;
   try {
-    localStorage.setItem(STORAGE_KEYS.ACTIVE_NOVEL_ID, String(activeNovelId));
+    if (activeNovelId != null) {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_NOVEL_ID, String(activeNovelId));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.ACTIVE_NOVEL_ID);
+    }
   } catch {
     // 静默失败
   }

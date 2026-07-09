@@ -4,21 +4,111 @@ import api from './client.js';
  * 业务数据 CRUD (/api/data/**)。
  * <p>novelId 由 client.js 请求拦截器统一通过 X-Novel-Id 头注入,
  * 业务层无需再显式传递 novelId。下列方法仅保留 path 参数版本以兼容旧调用。</p>
+ * <p>注意:Spring 7 严格路径匹配,URL 末尾不能带斜杠,
+ * 否则后端返回 NoResourceFoundException。所有 `${novelId || ''}` 拼接
+ * 必须做尾斜杠保护:当 novelId 为空时去掉末尾斜杠。</p>
  */
+
+/**
+ * 安全拼接 path 参数,避免末尾出现空斜杠。
+ * - listOutlines()       → /data/outline
+ * - listOutlines(5)      → /data/outline/5
+ * - listOutlines(undefined) → /data/outline
+ */
+function path(base, id) {
+  if (id === undefined || id === null || id === '') return base;
+  return `${base}/${id}`;
+}
 
 /* ============== 小说 ============== */
 
-/** 列出全部小说。 */
+/** 列出当前用户的小说(R5 用户隔离)。 */
 export async function listNovels() {
   const { data } = await api.get('/data/novel');
   return data;
+}
+
+/** 列出公共参考池小说(脱敏)。 */
+export async function listSharedNovels() {
+  const { data } = await api.get('/data/novel/shared');
+  return data;
+}
+
+/** 创建新小说。 */
+export async function createNovel(payload) {
+  const { data } = await api.post('/data/novel', payload);
+  return data;
+}
+
+/** 取单本小说基础信息。 */
+export async function getNovel(id) {
+  const { data } = await api.get(`/data/novel/${id}`);
+  return data;
+}
+
+/** 更新小说基础信息。 */
+export async function updateNovel(id, payload) {
+  const { data } = await api.put(`/data/novel/${id}`, payload);
+  return data;
+}
+
+/** 删除小说(级联删除全部子表)。 */
+export async function deleteNovel(id) {
+  const { data } = await api.delete(`/data/novel/${id}`);
+  return data;
+}
+
+/** 取小说概览(基础信息 + 各子模块统计 + 最近章节/大纲列表)。 */
+export async function getNovelOverview(id) {
+  const { data } = await api.get(`/data/novel/${id}/overview`);
+  return data;
+}
+
+/**
+ * 导出小说(BASE-10)。
+ * <p>返回二进制流(blob),前端用 URL.createObjectURL 触发下载。
+ * format: 'md' | 'txt' | 'json',默认 'md'。</p>
+ * <p>注意:此处不走响应拦截器的 Result 解包逻辑,因后端直接返回 byte[],
+ * 需显式指定 responseType: 'blob'。</p>
+ *
+ * @param {number|string} id 小说 ID
+ * @param {string} [format] 文件格式 md/txt/json
+ * @returns {Promise<{blob: Blob, filename: string}>} 二进制内容 + 服务器侧建议的文件名
+ */
+export async function exportNovel(id, format) {
+  const params = format ? { format } : undefined;
+  const resp = await api.get(`/data/novel/${id}/export`, {
+    params,
+    responseType: 'blob'
+  });
+  // 从 Content-Disposition 解析文件名,失败时退化为本地组装
+  let filename = '';
+  const cd = resp.headers?.['content-disposition'];
+  if (cd) {
+    const star = /filename\*=UTF-8''([^;]+)/i.exec(cd);
+    if (star && star[1]) {
+      try {
+        filename = decodeURIComponent(star[1]);
+      } catch {
+        filename = star[1];
+      }
+    } else {
+      const plain = /filename="?([^";]+)"?/i.exec(cd);
+      if (plain && plain[1]) filename = plain[1];
+    }
+  }
+  if (!filename) {
+    const ext = format || 'md';
+    filename = `novel-${id}.${ext}`;
+  }
+  return { blob: resp.data, filename };
 }
 
 /* ============== 大纲 ============== */
 
 /** 列出当前小说全部版本(novelId 走 X-Novel-Id 头)。 */
 export async function listOutlines(novelId) {
-  const { data } = await api.get(`/data/outline/${novelId || ''}`);
+  const { data } = await api.get(path('/data/outline', novelId));
   return data;
 }
 
@@ -30,7 +120,7 @@ export async function getOutline(id) {
 
 /** 获取当前激活版本(用于续生)。 */
 export async function getActiveOutline(novelId) {
-  const { data } = await api.get(`/data/outline/active/${novelId || ''}`);
+  const { data } = await api.get(path('/data/outline/active', novelId));
   return data;
 }
 
@@ -56,7 +146,7 @@ export async function deleteOutline(id) {
 
 /** 列出当前小说全部章节(摘要)。 */
 export async function listChapters(novelId) {
-  const { data } = await api.get(`/data/chapter/${novelId || ''}`);
+  const { data } = await api.get(path('/data/chapter', novelId));
   return data;
 }
 
@@ -82,7 +172,7 @@ export async function deleteChapter(id) {
 
 /** 列出当前小说全部。 */
 export async function listCharacters(novelId) {
-  const { data } = await api.get(`/data/character/${novelId || ''}`);
+  const { data } = await api.get(path('/data/character', novelId));
   return data;
 }
 
@@ -102,7 +192,7 @@ export async function deleteCharacter(id) {
 
 /** 列出当前小说全部。 */
 export async function listSettings(novelId) {
-  const { data } = await api.get(`/data/setting/${novelId || ''}`);
+  const { data } = await api.get(path('/data/setting', novelId));
   return data;
 }
 

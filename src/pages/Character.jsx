@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2, Sparkles, Network, Grid3x3, History, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, Network, Grid3x3, History, Trash2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   extractCharacter,
@@ -9,12 +9,14 @@ import {
 } from '../api/index.js';
 import SaveButton from '../components/SaveButton.jsx';
 import HistoryDrawer from '../components/HistoryDrawer.jsx';
+import DraftRestoreBanner from '../components/DraftRestoreBanner.jsx';
 import { useI18n } from '../context/I18nContext.jsx';
-import { STORAGE_KEYS } from '../constants/storage.js';
-import { loadDraft, saveDraft, clearDraft } from '../utils/storage.js';
+import { useTask } from '../context/TaskContext.jsx';
+import { STORAGE_KEYS, draftKey } from '../constants/storage.js';
+import { loadDraft, clearDraft } from '../utils/storage.js';
+import { useAutoSave } from '../hooks/useAutoSave.js';
 import { parseEdges, circularLayout } from '../utils/layout.js';
-
-const STORAGE_KEY = STORAGE_KEYS.DRAFT_CHARACTER;
+import { useNovelId } from '../hooks/useNovelId.js';
 
 /* ============ 关系图 ============ */
 function RelationGraph({ characters, t }) {
@@ -48,8 +50,8 @@ function RelationGraph({ characters, t }) {
     return (
       <div className="flex h-[520px] items-center justify-center text-white/20">
         <div className="text-center">
-          <Network className="mx-auto mb-3 h-12 w-12" />
-          <div className="font-mono text-xs tracking-widest">// {t('character.graphEmpty').toUpperCase()}</div>
+          <Network className="mx-auto mb-3 h-12 w-12 opacity-40" />
+          <div className="text-xs tracking-wide text-white/40">{t('character.graphEmpty')}</div>
         </div>
       </div>
     );
@@ -59,10 +61,10 @@ function RelationGraph({ characters, t }) {
   const palette = ['#38e6ff', '#a06cff', '#4dffb8', '#ffc857', '#ff6ce0', '#5cf2ff'];
 
   return (
-    <div className="relative w-full overflow-hidden rounded border border-cyan-400/15 bg-black/40">
+    <div className="sf-scroll-x relative w-full overflow-x-auto rounded border border-cyan-400/15 bg-black/40">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="block w-full"
+        className="block min-w-[600px] w-full sm:min-w-0"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(56,230,255,0.04), transparent 70%)'
         }}
@@ -261,7 +263,10 @@ function CharacterCard({ character, index, onChange, onRemove }) {
 /* ============ 主页面 ============ */
 export default function Character() {
   const { t } = useI18n();
-  const persisted = useMemo(() => loadDraft(STORAGE_KEY), []);
+  const novelId = useNovelId();
+  const { runTask } = useTask();
+  const STORAGE_KEY = draftKey(STORAGE_KEYS.DRAFT_CHARACTER, novelId);
+  const persisted = useMemo(() => loadDraft(STORAGE_KEY), [STORAGE_KEY]);
   const [text, setText] = useState(persisted?.text || '');
   const [characters, setCharacters] = useState(persisted?.characters || []);
   const [raw, setRaw] = useState(persisted?.raw || null);
@@ -273,11 +278,51 @@ export default function Character() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
 
+  // UX-05:人物草稿对象
+  const draftState = useMemo(
+    () => ({ text, characters, raw, savedAt: Date.now() }),
+    [text, characters, raw]
+  );
+  const autoSave = useAutoSave(draftState, STORAGE_KEY, { interval: 5000, enabled: !loading });
+
+  // 草稿恢复
+  const [showRestoreBanner, setShowRestoreBanner] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState(null);
+
   useEffect(() => {
-    if (text || characters.length > 0) {
-      saveDraft(STORAGE_KEY, { text, characters, raw });
+    if (!persisted) return;
+    if (persisted.text || (Array.isArray(persisted.characters) && persisted.characters.length > 0)) {
+      setPendingDraft(persisted);
+      setShowRestoreBanner(true);
     }
-  }, [text, characters, raw]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRestoreDraft = (draft) => {
+    if (!draft) return;
+    if (typeof draft.text === 'string') setText(draft.text);
+    if (Array.isArray(draft.characters)) setCharacters(draft.characters);
+    if (draft.raw !== undefined) setRaw(draft.raw);
+    setShowRestoreBanner(false);
+    setPendingDraft(null);
+    toast.success(t('draft.restore'));
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft(STORAGE_KEY);
+    setText('');
+    setCharacters([]);
+    setRaw(null);
+    setShowRestoreBanner(false);
+    setPendingDraft(null);
+    toast.success(t('draft.discard'));
+  };
+
+  const draftHint = useMemo(() => {
+    if (!pendingDraft?.savedAt) return '';
+    const mins = Math.max(0, Math.round((Date.now() - pendingDraft.savedAt) / 60000));
+    return t('draft.hintMinutes').replace('{n}', String(mins));
+  }, [pendingDraft, t]);
 
   const extract = async () => {
     if (!text.trim()) {
@@ -287,23 +332,27 @@ export default function Character() {
     setLoading(true);
     setCharacters([]);
     setRaw(null);
-    try {
-      const data = await extractCharacter(text.trim());
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data.characters)
-        ? data.characters
-        : Array.isArray(data.data)
-        ? data.data
-        : [];
-      setCharacters(list);
-      setRaw(data);
-      toast.success(t('character.extracted').replace('{n}', list.length));
-    } catch (err) {
-      toast.error(t('character.extractFailed') + ':' + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
-    }
+    // UX-07:注册到任务面板
+    runTask({
+      type: 'character_extract',
+      title: `${t('task.type.character')} · ${text.slice(0, 20)}...`,
+      params: { text: text.trim() },
+      run: () => extractCharacter(text.trim()),
+      onSuccess: (data) => {
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.characters)
+          ? data.characters
+          : Array.isArray(data.data)
+          ? data.data
+          : [];
+        setCharacters(list);
+        setRaw(data);
+        toast.success(t('character.extracted').replace('{n}', list.length));
+      },
+      successMsg: null
+    });
+    setLoading(false);
   };
 
   const reset = () => {
@@ -311,6 +360,7 @@ export default function Character() {
     setCharacters([]);
     setRaw(null);
     clearDraft(STORAGE_KEY);
+    autoSave.clear();
     toast.success(t('character.reset'));
   };
 
@@ -343,7 +393,10 @@ export default function Character() {
       }
       return next;
     });
-    return await saveCharactersBatch(payload);
+    const data = await saveCharactersBatch(payload);
+    // 后端保存成功 → 清掉本页草稿
+    autoSave.clear();
+    return data;
   };
 
   const openHistory = async () => {
@@ -390,12 +443,12 @@ export default function Character() {
   const hasCharacters = characters.length > 0;
 
   return (
-    <div className="min-h-screen p-8">
-      <header className="mb-6 flex items-end justify-between">
+    <div className="min-h-screen p-4 sm:p-8">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="sf-heading">{t('character.heading')}</div>
-          <p className="mt-2 pl-4 font-mono text-[11px] tracking-wider text-cyan-300/50">
-            // CHARACTER EXTRACTION · {t('character.subheading')}
+          <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
+            {t('character.subheading')}
           </p>
         </div>
         {hasCharacters && (
@@ -417,9 +470,18 @@ export default function Character() {
       </header>
 
       <div className="mx-auto max-w-7xl">
+        {/* UX-05 草稿恢复提示 */}
+        {showRestoreBanner && (
+          <DraftRestoreBanner
+            draft={pendingDraft}
+            hint={draftHint}
+            onRestore={handleRestoreDraft}
+            onDiscard={handleDiscardDraft}
+          />
+        )}
         {/* 输入区 */}
         <div className="sf-panel-hud mb-6 p-4">
-          <div className="mb-2 text-[10px] tracking-widest text-cyan-300/60">// {t('character.sourceText').toUpperCase()}</div>
+          <label className="mb-2 block text-[10px] tracking-widest text-cyan-300/60">{t('character.sourceText')}</label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -428,15 +490,36 @@ export default function Character() {
             className="sf-input w-full resize-none"
           />
           <div className="mt-2 flex items-center justify-between text-[10px] tracking-widest text-white/30">
-            <span className="font-mono">CHARS: {text.length}</span>
+            <span>{t('character.charCount').replace('{n}', String(text.length))}</span>
             <span>{t('character.charHint')}</span>
           </div>
-          <div className="mt-3 flex items-center justify-between border-t border-cyan-400/10 pt-3">
-            <div className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-cyan-300/40">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-cyan-400/10 pt-3">
+            <div className="flex items-center gap-2 text-[11px] tracking-wide text-cyan-300/60">
               <span className="sf-dot" />
-              READY
+              {t('character.ready')}
+              {/* UX-05 自动保存状态指示 */}
+              <span className="ml-2 inline-flex items-center gap-1 text-[10px] tracking-widest text-cyan-300/40">
+                {autoSave.status === 'pending' && (
+                  <>
+                    <span className="sf-dot" />
+                    {t('draft.autoSaving')}
+                  </>
+                )}
+                {autoSave.status === 'saving' && (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    {t('draft.autoSaving')}
+                  </>
+                )}
+                {autoSave.status === 'saved' && (
+                  <>
+                    <Check className="h-3 w-3 text-emerald-300/70" />
+                    <span className="text-emerald-300/70">{t('draft.autoSaved')}</span>
+                  </>
+                )}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button onClick={openHistory} className="sf-btn-ghost">
                 <History className="h-3 w-3" /> {t('character.history')}
               </button>
@@ -470,7 +553,7 @@ export default function Character() {
 
             {view === 'grid' && (
               <div className="sf-panel-hud p-4">
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="sf-chip">CARDS</span>
                     <span className="text-sm text-white/70">{t('character.cardsTitle').replace('{n}', characters.length)}</span>
@@ -498,7 +581,8 @@ export default function Character() {
           raw === null && (
             <div className="sf-panel rounded border border-dashed border-cyan-400/10 py-20 text-center text-white/30">
               <Network className="mx-auto mb-3 h-12 w-12 opacity-40" />
-              <div className="font-mono text-xs tracking-widest">// {t('character.awaiting')}</div>
+              <div className="text-xs tracking-wide text-white/40">{t('character.awaiting')}</div>
+              <div className="mt-1 text-[10px] text-white/30">{t('character.awaitingHint')}</div>
             </div>
           )
         )}

@@ -156,16 +156,16 @@ export default function Lore() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="border-b border-cyan-400/10 px-8 py-5">
+    <div className="flex sf-h-screen-dynamic flex-col">
+      <header className="border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
         <div className="sf-heading">{t('lore.heading')}</div>
-        <p className="mt-2 pl-4 font-mono text-[11px] tracking-wider text-cyan-300/50">
-          // LORE · {t('lore.subheading')}
+        <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
+          {t('lore.subheading')}
         </p>
       </header>
 
-      <div className="border-b border-cyan-400/10 px-8 py-3">
-        <div className="mx-auto flex max-w-4xl items-center gap-2">
+      <div className="border-b border-cyan-400/10 px-4 py-3 sm:px-8">
+        <div className="sf-scroll-x mx-auto flex max-w-4xl items-center gap-2 overflow-x-auto pb-1">
           {TABS.map((tb) => {
             const Icon = tb.icon;
             const active = tab === tb.key;
@@ -173,7 +173,7 @@ export default function Lore() {
               <button
                 key={tb.key}
                 onClick={() => setTab(tb.key)}
-                className={`flex items-center gap-2 rounded border px-4 py-2 text-xs tracking-wider transition ${
+                className={`flex shrink-0 items-center gap-2 rounded border px-3 py-2 text-xs tracking-wider transition sm:px-4 ${
                   active
                     ? 'border-cyan-300/40 bg-cyan-300/10 text-cyan-300 shadow-[0_0_16px_rgba(56,230,255,0.15)]'
                     : 'border-cyan-400/15 bg-transparent text-white/50 hover:border-cyan-300/40 hover:text-cyan-300'
@@ -187,18 +187,18 @@ export default function Lore() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-8 py-6">
+      <div className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         <div className="mx-auto max-w-4xl">
           {tab === 'ask' && (
             <div className="flex h-full flex-col">
-              <div className="mb-3 flex items-center gap-3">
-                <span className="font-mono text-[10px] tracking-widest text-cyan-300/60">{t('lore.session').toUpperCase()}</span>
+              <div className="mb-3 flex flex-wrap items-center gap-2 sm:gap-3">
+                <label className="text-[11px] tracking-wide text-cyan-300/60">{t('lore.session')}</label>
                 <input
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
-                  className="sf-input flex-1 max-w-[200px]"
+                  className="sf-input min-w-0 flex-1 sm:max-w-[200px]"
                 />
-                <span className="text-[10px] tracking-wider text-white/30">{t('lore.sessionHint')}</span>
+                <span className="hidden text-[10px] tracking-wider text-white/30 sm:inline">{t('lore.sessionHint')}</span>
               </div>
 
               <div ref={scrollRef} className="flex-1 space-y-4 overflow-auto pb-4">
@@ -206,7 +206,7 @@ export default function Lore() {
                   <div className="flex h-full items-center justify-center text-white/20">
                     <div className="text-center">
                       <Compass className="mx-auto mb-3 h-12 w-12 opacity-40" />
-                      <div className="font-mono text-xs tracking-widest">// {t('lore.awaiting')}</div>
+                      <div className="text-sm tracking-wide text-white/40">{t('lore.awaiting')}</div>
                       <div className="mt-1 text-[10px] text-white/30">{t('lore.awaitingHint')}</div>
                     </div>
                   </div>
@@ -214,7 +214,7 @@ export default function Lore() {
                 {history.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`max-w-[80%] rounded border px-4 py-3 ${
+                      className={`max-w-[85%] sm:max-w-[80%] rounded border px-3 py-2 sm:px-4 sm:py-3 ${
                         m.role === 'user'
                           ? 'border-cyan-300/40 bg-cyan-300/[0.08] text-white shadow-[0_0_16px_rgba(56,230,255,0.15)]'
                           : 'border-cyan-400/15 bg-black/40 text-white/90'
@@ -249,9 +249,7 @@ export default function Lore() {
           {tab === 'import' && (
             <div className="space-y-4">
               <div className="sf-panel-hud p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="sf-chip">{t('lore.title').toUpperCase()}</span>
-                </div>
+                <label className="mb-2 block text-[10px] tracking-widest text-cyan-300/60">{t('lore.title')}</label>
                 <input
                   value={loreTitle}
                   onChange={(e) => setLoreTitle(e.target.value)}
@@ -261,9 +259,9 @@ export default function Lore() {
               </div>
               <div className="sf-panel-hud p-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="sf-chip">{t('lore.content').toUpperCase()}</span>
-                  <span className="font-mono text-[10px] tracking-widest text-white/30">
-                    CHARS: {loreContent.length}
+                  <label className="text-[10px] tracking-widest text-cyan-300/60">{t('lore.content')}</label>
+                  <span className="text-[10px] tracking-widest text-white/30">
+                    {t('lore.charCount').replace('{n}', String(loreContent.length))}
                   </span>
                 </div>
                 <textarea
@@ -275,9 +273,9 @@ export default function Lore() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-cyan-300/40">
+                <div className="flex items-center gap-2 text-[11px] tracking-wide text-cyan-300/60">
                   <span className="sf-dot" />
-                  READY
+                  {t('lore.ready')}
                 </div>
                 <button onClick={doImport} disabled={loading} className="sf-btn">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -309,7 +307,7 @@ export default function Lore() {
                   <span className="sf-chip">NEW</span>
                   <span className="text-[10px] tracking-widest text-white/30">{t('lore.archiveHint')}</span>
                 </div>
-                <div className="grid grid-cols-[160px_140px_1fr_auto] gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[160px_140px_1fr_auto] sm:gap-2">
                   <input
                     value={archiveDraft.keyword}
                     onChange={(e) => setArchiveDraft((s) => ({ ...s, keyword: e.target.value }))}
@@ -353,8 +351,8 @@ export default function Lore() {
                   </div>
                 ) : archiveList.length === 0 ? (
                   <div className="rounded border border-dashed border-cyan-400/10 py-12 text-center text-white/30">
-                    <Database className="mx-auto mb-2 h-10 w-10 opacity-40" />
-                    <div className="font-mono text-[10px] tracking-widest">// {t('lore.archiveEmpty')}</div>
+                  <Database className="mx-auto mb-2 h-10 w-10 opacity-40" />
+                  <div className="text-xs tracking-wide text-white/40">{t('lore.archiveEmpty')}</div>
                   </div>
                 ) : (
                   <ul className="space-y-2">
@@ -401,9 +399,7 @@ export default function Lore() {
                 <UsagePanel />
               </div>
               <div className="sf-panel-hud p-4">
-                <div className="mb-2 font-mono text-[10px] tracking-widest text-cyan-300/60">
-                  // {t('lore.architectureTitle').toUpperCase()}
-                </div>
+                <label className="mb-2 block text-[10px] tracking-widest text-cyan-300/60">{t('lore.architectureTitle')}</label>
                 <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-white/60">
 {t('lore.architecture')}
                 </pre>
@@ -414,14 +410,14 @@ export default function Lore() {
           {tab === 'search' && (
             <div className="space-y-4">
               <div className="sf-panel-hud p-4">
-                <div className="mb-2 text-[10px] tracking-widest text-cyan-300/60">// {t('lore.query').toUpperCase()}</div>
-                <div className="flex gap-2">
+                <label className="mb-2 block text-[10px] tracking-widest text-cyan-300/60">{t('lore.query')}</label>
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && doSearch()}
                     placeholder={t('lore.queryPlaceholder')}
-                    className="sf-input flex-1"
+                    className="sf-input min-w-0 flex-1"
                   />
                   <button onClick={doSearch} disabled={loading} className="sf-btn">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -468,7 +464,8 @@ export default function Lore() {
               {!searchResult && !loading && (
                 <div className="sf-panel rounded border border-dashed border-cyan-400/10 py-20 text-center text-white/30">
                   <Search className="mx-auto mb-3 h-12 w-12 opacity-40" />
-                  <div className="font-mono text-xs tracking-widest">// {t('lore.hitsAwaiting')}</div>
+                  <div className="text-sm tracking-wide text-white/40">{t('lore.hitsAwaiting')}</div>
+                  <div className="mt-1 text-[10px] text-white/30">{t('lore.hitsAwaitingHint')}</div>
                 </div>
               )}
             </div>
@@ -477,10 +474,10 @@ export default function Lore() {
       </div>
 
       {tab === 'ask' && (
-        <div className="border-t border-cyan-400/10 px-8 py-4">
+        <div className="border-t border-cyan-400/10 px-4 py-3 sm:px-8 sm:py-4">
           <div className="mx-auto flex max-w-4xl items-end gap-2">
             <div className="flex-1">
-              <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">// {t('lore.question').toUpperCase()}</div>
+              <label className="mb-1 block text-[10px] tracking-widest text-cyan-300/60">{t('lore.question')}</label>
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
@@ -493,7 +490,7 @@ export default function Lore() {
             <button
               onClick={ask}
               disabled={loading || !question.trim()}
-              className="sf-btn h-[64px] px-4"
+              className="sf-btn h-[56px] px-4 sm:h-[64px]"
               title={t('common.send')}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

@@ -22,4 +22,11 @@ export const nav = {
   'nav.user': 'User',
   'nav.noRole': 'No role',
   'nav.logoutConfirm': 'Logged out',
+  'nav.novels': 'My Novels',
+  'nav.novelsDesc': 'Novel list',
+  'nav.overview': 'Overview',
+  'nav.overviewDesc': 'Novel overview',
+  'nav.back': 'Back',
+  'nav.backToNovels': 'Back to novels',
+  'nav.breadcrumb': 'Breadcrumb',
 };

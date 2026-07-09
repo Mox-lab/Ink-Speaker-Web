@@ -20,8 +20,14 @@ export default function DiffView({ before = '', after = '' }) {
 
   return (
     <div className="sf-panel-hud overflow-hidden p-0">
-      <div className="border-b border-cyan-400/10 px-3 py-2 font-mono text-[10px] tracking-widest text-cyan-300/60">
-        <span>{`// DIFF · ${addCount} ADD · ${delCount} DEL · ${eqCount} EQ`}</span>
+      <div className="flex flex-wrap items-center gap-3 border-b border-cyan-400/10 px-3 py-2 text-[10px] tracking-widest text-cyan-300/60">
+        <span className="flex items-center gap-1.5">
+          <span className="sf-dot" />
+          DIFF
+        </span>
+        <span className="text-emerald-300">+{addCount} ADD</span>
+        <span className="text-rose-300">-{delCount} DEL</span>
+        <span className="text-white/40">= {eqCount} EQ</span>
       </div>
       <div className="max-h-[480px] overflow-auto bg-black/60 font-mono text-xs">
         {diffLines.map((line, i) => {

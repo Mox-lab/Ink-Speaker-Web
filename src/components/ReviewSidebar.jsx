@@ -81,7 +81,7 @@ export default function ReviewSidebar({ chapterNo, onClose }) {
   };
 
   return (
-    <div className="fixed right-0 top-0 z-40 flex h-full w-96 flex-col border-l border-cyan-400/15 bg-black/85 backdrop-blur-md">
+    <div className="fixed right-0 top-0 z-40 flex h-full w-full max-w-[384px] flex-col border-l border-cyan-400/15 bg-black/85 backdrop-blur-md">
       <header className="flex items-center justify-between border-b border-cyan-400/15 px-4 py-3">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-cyan-300" />
@@ -127,7 +127,7 @@ function resolveReviewBody(loading, itemCount, filteredCount, t, filtered, sever
   if (loading && itemCount === 0) {
     return (
       <div className="py-10 text-center text-white/30">
-        <span>{`// ${t('common.loading').toUpperCase()}...`}</span>
+        <span className="text-xs tracking-wide text-white/50">{t('common.loading')}...</span>
       </div>
     );
   }
@@ -135,7 +135,7 @@ function resolveReviewBody(loading, itemCount, filteredCount, t, filtered, sever
     return (
       <div className="py-10 text-center text-white/30">
         <ShieldCheck className="mx-auto mb-2 h-8 w-8 opacity-40" />
-        <div className="font-mono text-[10px] tracking-widest">{`// ${t('review.noIssues').toUpperCase()}`}</div>
+        <div className="text-xs tracking-wide text-white/40">{t('review.noIssues')}</div>
       </div>
     );
   }

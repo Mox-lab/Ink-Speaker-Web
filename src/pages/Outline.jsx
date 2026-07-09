@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, FileText, Copy, ChevronRight, ArrowRight, History, Zap, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, FileText, Copy, ChevronRight, ArrowRight, History, Zap, Trash2, PenLine, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   outline as outlineApi,
@@ -13,12 +14,14 @@ import {
 import EditableText from '../components/EditableText.jsx';
 import HistoryDrawer from '../components/HistoryDrawer.jsx';
 import SaveButton from '../components/SaveButton.jsx';
+import DraftRestoreBanner from '../components/DraftRestoreBanner.jsx';
 import { useI18n } from '../context/I18nContext.jsx';
-import { STORAGE_KEYS } from '../constants/storage.js';
+import { useTask } from '../context/TaskContext.jsx';
+import { STORAGE_KEYS, draftKey } from '../constants/storage.js';
 import { loadDraft, saveDraft, clearDraft } from '../utils/storage.js';
+import { useAutoSave } from '../hooks/useAutoSave.js';
 import { parseOutline } from '../utils/parse.js';
-
-const STORAGE_KEY = STORAGE_KEYS.DRAFT_OUTLINE;
+import { useNovelId } from '../hooks/useNovelId.js';
 
 /**
  * 模块级 Promise 缓存:让生成任务跨组件卸载/重新挂载存活。
@@ -57,36 +60,58 @@ function clearPendingOutline() {
  * 解析大纲文本为章节节点数组。
  */
 
-function FlowNode({ node, active, onClick }) {
+function FlowNode({ node, active, onClick, onJumpToChapter }) {
   return (
     <div
-      onClick={onClick}
-      className={`sf-scan relative flex w-72 shrink-0 cursor-pointer flex-col rounded border p-4 transition ${
+      className={`sf-scan relative flex w-64 shrink-0 cursor-pointer flex-col rounded border p-4 transition sm:w-72 ${
         active
           ? 'border-cyan-300 bg-cyan-400/[0.08] shadow-[0_0_24px_rgba(56,230,255,0.25)]'
           : 'border-cyan-400/15 bg-black/40 hover:border-cyan-300/50 hover:bg-cyan-400/[0.04]'
       }`}
     >
-      <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded border border-cyan-300/40 bg-cyan-300/10 font-mono text-xs text-cyan-300">
-            {String(node.no).padStart(2, '0')}
+      <div
+        onClick={onClick}
+        className="flex h-full flex-col"
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded border border-cyan-300/40 bg-cyan-300/10 font-mono text-xs text-cyan-300">
+              {String(node.no).padStart(2, '0')}
+            </div>
+            <span className="sf-chip">CHAPTER</span>
           </div>
-          <span className="sf-chip">CHAPTER</span>
+          <span className="font-mono text-[10px] text-white/30">
+            {String(node.index + 1).padStart(3, '0')}
+          </span>
         </div>
-        <span className="font-mono text-[10px] text-white/30">
-          {String(node.index + 1).padStart(3, '0')}
-        </span>
-      </div>
 
-      <div className="mb-2 text-sm font-bold leading-tight text-white">{node.title}</div>
+        <div className="mb-2 text-sm font-bold leading-tight text-white">{node.title}</div>
 
-      <div className="line-clamp-3 flex-1 text-xs leading-relaxed text-white/60">
-        {node.summary || '(无摘要)'}
+        <div className="line-clamp-3 flex-1 text-xs leading-relaxed text-white/60">
+          {node.summary || '(无摘要)'}
+        </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between border-t border-cyan-400/10 pt-2 text-[10px] tracking-widest text-cyan-300/40">
-        <span>NODE</span>
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation();
+            onJumpToChapter?.(node);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.stopPropagation();
+              onJumpToChapter?.(node);
+            }
+          }}
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-cyan-300/60 transition hover:bg-cyan-400/10 hover:text-cyan-300"
+          title="以此节点为大纲跳转到章节页"
+        >
+          <PenLine className="h-3 w-3" />
+          写此章
+        </span>
         <ChevronRight className="h-3 w-3" />
       </div>
     </div>
@@ -95,7 +120,11 @@ function FlowNode({ node, active, onClick }) {
 
 export default function Outline() {
   const { t } = useI18n();
-  const persisted = useMemo(() => loadDraft(STORAGE_KEY), []);
+  const navigate = useNavigate();
+  const novelId = useNovelId();
+  const { runTask } = useTask();
+  const STORAGE_KEY = draftKey(STORAGE_KEYS.DRAFT_OUTLINE, novelId);
+  const persisted = useMemo(() => loadDraft(STORAGE_KEY), [STORAGE_KEY]);
   const [theme, setTheme] = useState(persisted?.theme || '');
   const [chapters, setChapters] = useState(persisted?.chapters ?? 20);
   const [rawResult, setRawResult] = useState(persisted?.rawResult || '');
@@ -112,12 +141,70 @@ export default function Outline() {
 
   const nodes = useMemo(() => parseOutline(rawResult), [rawResult]);
 
-  // 持久化:必须带 loading,否则 generate() 写入 loading:true 后会被覆盖
+  // UX-05:大纲草稿对象(供 useAutoSave 使用)
+  const draftState = useMemo(
+    () => ({
+      theme,
+      chapters: Number(chapters) || 20,
+      rawResult,
+      loading,
+      savedAt: Date.now()
+    }),
+    [theme, chapters, rawResult, loading]
+  );
+
+  const autoSave = useAutoSave(draftState, STORAGE_KEY, { interval: 5000, enabled: !loading });
+
+  // 草稿恢复:挂载时若 persisted 非空且非 loading 飞行态,弹恢复提示
+  const [showRestoreBanner, setShowRestoreBanner] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState(null);
+
   useEffect(() => {
-    if (theme || rawResult || loading) {
+    if (!persisted) return;
+    // loading=true 表示上次生成还在飞行中,不弹恢复(交给挂载时 attach 逻辑处理)
+    if (persisted.loading) return;
+    if (persisted.rawResult || persisted.theme) {
+      setPendingDraft(persisted);
+      setShowRestoreBanner(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleRestoreDraft = (draft) => {
+    if (!draft) return;
+    if (typeof draft.theme === 'string') setTheme(draft.theme);
+    if (Number.isFinite(Number(draft.chapters))) setChapters(Number(draft.chapters));
+    if (typeof draft.rawResult === 'string') setRawResult(draft.rawResult);
+    setShowRestoreBanner(false);
+    setPendingDraft(null);
+    toast.success(t('draft.restore'));
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft(STORAGE_KEY);
+    setTheme('');
+    setRawResult('');
+    setShowRestoreBanner(false);
+    setPendingDraft(null);
+    toast.success(t('draft.discard'));
+  };
+
+  const draftHint = useMemo(() => {
+    if (!pendingDraft?.savedAt) return '';
+    const mins = Math.max(0, Math.round((Date.now() - pendingDraft.savedAt) / 60000));
+    return t('draft.hintMinutes').replace('{n}', String(mins));
+  }, [pendingDraft, t]);
+
+  // 持久化:必须带 loading,否则 generate() 写入 loading:true 后会被覆盖
+  // 注:autoSave 已替代手写 useEffect,此处保留逻辑兼容(避免 lint 警告,实际不再需要)
+  useEffect(() => {
+    // 保留对首次写入的场景兜底:autoSave 在 enabled 时已写入
+    // 仅在 disabled(loading 飞行)时显式保存一次,避免遗漏
+    if (loading) {
       saveDraft(STORAGE_KEY, { theme, chapters: Number(chapters) || 20, rawResult, loading });
     }
-  }, [theme, chapters, rawResult, loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // 挂载时若上次请求仍在飞行中,attach 到同一个 Promise 继续等待
   useEffect(() => {
@@ -177,27 +264,31 @@ export default function Outline() {
     }
     setActiveNode(null);
 
-    try {
-      const opts = continueMode && lastOutline ? { lastOutline, startChapter } : {};
-      const data = await attachOutline(theme.trim(), Number(chapters) || 20, opts);
-      if (data.error) {
-        toast.error(data.error);
-        return;
-      }
-      const newContent = data.outline || '';
-      if (continueMode && lastOutline && newContent) {
-        // 追加到现有内容(避免重复,简单以双换行分隔)
-        setRawResult((prev) => (prev ? prev + '\n\n' + newContent : newContent));
-        toast.success(t('outline.continued').replace('{n}', chapters));
-      } else {
-        setRawResult(newContent);
-        toast.success(t('outline.generated').replace('{n}', chapters));
-      }
-    } catch (err) {
-      toast.error(t('outline.generateFailed') + ':' + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
-    }
+    // UX-07:注册到任务面板
+    const opts = continueMode && lastOutline ? { lastOutline, startChapter } : {};
+    const taskTitle = `${t('task.type.outline')} · ${theme.slice(0, 20)}${continueMode ? ` (${t('outline.continueOn')})` : ''}`;
+    runTask({
+      type: 'outline_generate',
+      title: taskTitle,
+      params: { theme: theme.trim(), chapters: Number(chapters) || 20, continueMode, opts },
+      run: () => attachOutline(theme.trim(), Number(chapters) || 20, opts),
+      onSuccess: (data) => {
+        if (data.error) {
+          toast.error(data.error);
+          return;
+        }
+        const newContent = data.outline || '';
+        if (continueMode && lastOutline && newContent) {
+          setRawResult((prev) => (prev ? prev + '\n\n' + newContent : newContent));
+          toast.success(t('outline.continued').replace('{n}', chapters));
+        } else {
+          setRawResult(newContent);
+          toast.success(t('outline.generated').replace('{n}', chapters));
+        }
+      },
+      successMsg: null
+    });
+    setLoading(false);
   };
 
   const reset = () => {
@@ -206,6 +297,7 @@ export default function Outline() {
     setActiveNode(null);
     setLoading(false);
     clearDraft(STORAGE_KEY);
+    autoSave.clear();
     clearPendingOutline();
     toast.success(t('outline.resetDone'));
   };
@@ -219,6 +311,19 @@ export default function Outline() {
     scrollRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
   };
 
+  /** 跳转到章节页,并把当前节点的大纲作为预填数据透传 */
+  const handleJumpToChapter = (node) => {
+    setActiveNode(node);
+    navigate(`/novels/${novelId}/chapter`, {
+      state: {
+        outlineText: node.summary || '',
+        chapterNo: node.no,
+        chapterTitle: node.title || '',
+        from: 'outline'
+      }
+    });
+  };
+
   /** 保存到数据库(新建版本) */
   const handleSave = async () => {
     if (!rawResult.trim()) throw new Error('内容为空');
@@ -229,6 +334,8 @@ export default function Outline() {
       content: rawResult
     };
     const data = await saveOutlineApi(payload);
+    // 后端保存成功 → 清掉本大纲草稿
+    autoSave.clear();
     if (data && data.id) {
       // 保存后刷新历史(若抽屉是开的)
       if (historyOpen) openHistory();
@@ -303,31 +410,38 @@ export default function Outline() {
   const hasContent = !!rawResult && !loading;
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       {/* 顶部标题区 */}
-      <header className="mb-6 flex items-end justify-between">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="sf-heading">{t('outline.heading')}</div>
-          <p className="mt-2 pl-4 font-mono text-[11px] tracking-wider text-cyan-300/50">
-            // OUTLINE FLOW · {t('outline.subheading')}
+          <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
+            {t('outline.subheading')}
           </p>
         </div>
         {nodes.length > 0 && (
-          <div className="flex items-center gap-3 font-mono text-xs text-cyan-300/60">
+          <div className="flex items-center gap-2 text-[10px] tracking-wider text-cyan-300/60 sm:gap-3 sm:text-xs">
             <span className="sf-dot" />
-            <span>NODES: {String(nodes.length).padStart(2, '0')}</span>
-            <span className="text-white/20">|</span>
-            <span>FLOW READY</span>
+            <span>{t('outline.nodeCount').replace('{n}', String(nodes.length).padStart(2, '0'))}</span>
           </div>
         )}
       </header>
 
       <div className="mx-auto max-w-7xl">
+        {/* UX-05 草稿恢复提示 */}
+        {showRestoreBanner && (
+          <DraftRestoreBanner
+            draft={pendingDraft}
+            hint={draftHint}
+            onRestore={handleRestoreDraft}
+            onDiscard={handleDiscardDraft}
+          />
+        )}
         {/* 输入区 */}
         <div className="sf-panel-hud mb-6 p-4">
-          <div className="grid grid-cols-[1fr_140px_auto] gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_140px_auto]">
             <div>
-              <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">// {t('outline.theme').toUpperCase()}</div>
+              <label className="mb-1 block text-[10px] tracking-widest text-cyan-300/60">{t('outline.theme')}</label>
               <input
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
@@ -336,7 +450,7 @@ export default function Outline() {
               />
             </div>
             <div>
-              <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">// {t('outline.chapters').toUpperCase()}</div>
+              <label className="mb-1 block text-[10px] tracking-widest text-cyan-300/60">{t('outline.chapters')}</label>
               <input
                 type="number"
                 min={5}
@@ -347,7 +461,7 @@ export default function Outline() {
               />
             </div>
             <div className="flex items-end">
-              <button onClick={generate} disabled={loading} className="sf-btn h-[42px]">
+              <button onClick={generate} disabled={loading} className="sf-btn h-[42px] w-full sm:w-auto">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
                 {loading ? t('outline.generating') : continueMode ? t('outline.continueOn') : t('outline.generate')}
               </button>
@@ -375,6 +489,27 @@ export default function Outline() {
                 <Trash2 className="h-3 w-3" /> {t('common.reset')}
               </button>
             )}
+            {/* UX-05 自动保存状态指示 */}
+            <span className="ml-auto inline-flex items-center gap-1 text-[10px] tracking-widest text-cyan-300/40">
+              {autoSave.status === 'pending' && (
+                <>
+                  <span className="sf-dot" />
+                  {t('draft.autoSaving')}
+                </>
+              )}
+              {autoSave.status === 'saving' && (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {t('draft.autoSaving')}
+                </>
+              )}
+              {autoSave.status === 'saved' && (
+                <>
+                  <Check className="h-3 w-3 text-emerald-300/70" />
+                  <span className="text-emerald-300/70">{t('draft.autoSaved')}</span>
+                </>
+              )}
+            </span>
           </div>
 
           {loading && <div className="sf-loader-bar mt-3" />}
@@ -428,7 +563,7 @@ export default function Outline() {
 
               <div
                 ref={scrollRef}
-                className="flex items-stretch gap-2 overflow-x-auto pb-4"
+                className="sf-scroll-x flex items-stretch gap-2 overflow-x-auto pb-4"
                 style={{ scrollBehavior: 'smooth' }}
               >
                 {nodes.map((node, i) => (
@@ -437,6 +572,7 @@ export default function Outline() {
                       node={node}
                       active={activeNode?.index === node.index}
                       onClick={() => setActiveNode(node)}
+                      onJumpToChapter={handleJumpToChapter}
                     />
                     {i < nodes.length - 1 && (
                       <div className="flex items-center px-1 text-cyan-300/40">
@@ -449,11 +585,21 @@ export default function Outline() {
 
               {activeNode && (
                 <div className="mt-4 rounded border border-cyan-400/20 bg-black/40 p-4">
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="sf-chip">{t('outline.detail').toUpperCase()}</span>
-                    <span className="text-sm font-bold text-white">
-                      [{String(activeNode.no).padStart(2, '0')}] {activeNode.title}
-                    </span>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="sf-chip">{t('outline.detail').toUpperCase()}</span>
+                      <span className="text-sm font-bold text-white">
+                        [{String(activeNode.no).padStart(2, '0')}] {activeNode.title}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleJumpToChapter(activeNode)}
+                      className="flex items-center gap-1.5 rounded border border-cyan-400/40 bg-cyan-400/10 px-3 py-1 text-[11px] tracking-widest text-cyan-300 transition hover:bg-cyan-400/20"
+                      title={t('outline.jumpToChapter')}
+                    >
+                      <PenLine className="h-3 w-3" />
+                      {t('outline.jumpToChapter')}
+                    </button>
                   </div>
                   <pre className="max-h-[40vh] overflow-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-white/80">
                     {activeNode.summary}
@@ -488,7 +634,8 @@ export default function Outline() {
           </>
         ) : (
           <div className="sf-panel rounded border border-dashed border-cyan-400/10 py-20 text-center text-white/30">
-            <div className="font-mono text-xs tracking-widest">// FLOW CHART WILL RENDER HERE</div>
+            <FileText className="mx-auto mb-3 h-10 w-10 opacity-40" />
+            <div className="text-xs tracking-wide">{t('outline.flowEmpty')}</div>
           </div>
         )}
       </div>

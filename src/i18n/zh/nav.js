@@ -22,4 +22,11 @@ export const nav = {
   'nav.user': '用户',
   'nav.noRole': '无角色',
   'nav.logoutConfirm': '已退出登录',
+  'nav.novels': '我的小说',
+  'nav.novelsDesc': '小说列表',
+  'nav.overview': '总览',
+  'nav.overviewDesc': '小说总览',
+  'nav.back': '返回',
+  'nav.backToNovels': '返回小说列表',
+  'nav.breadcrumb': '面包屑导航',
 };

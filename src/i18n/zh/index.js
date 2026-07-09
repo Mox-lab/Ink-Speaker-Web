@@ -14,6 +14,7 @@ import { lore } from './lore.js';
 import { memory } from './memory.js';
 import { review } from './review.js';
 import { theme } from './theme.js';
+import { novel } from './novel.js';
 
 /** 中文完整词典 */
 export const zh = {
@@ -29,4 +30,5 @@ export const zh = {
   ...memory,
   ...review,
   ...theme,
+  ...novel,
 };

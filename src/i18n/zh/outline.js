@@ -22,6 +22,7 @@ export const outline = {
   'outline.generated': '已生成 {n} 章大纲',
   'outline.continued': '已接续生成 {n} 章',
   'outline.flowEmpty': '尚未生成大纲,请在上方输入主题后点击「执行生成」',
+  'outline.nodeCount': '共 {n} 个节点',
   'outline.flowTitle': '大纲流程图',
   'outline.fullText': '大纲全文(可编辑)',
   'outline.detail': '详情',
@@ -40,4 +41,6 @@ export const outline = {
   'outline.loadedVersion': '已加载 v{n}',
   'outline.noOutline': '未发现激活大纲,请先在大纲页保存一版',
   'outline.loadedSegment': '已加载第 {n} 段大纲',
+  'outline.jumpToChapter': '去写此章',
+  'outline.prefilledFromOutline': '已从大纲节点载入',
 };

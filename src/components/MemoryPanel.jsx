@@ -44,14 +44,14 @@ export default function MemoryPanel() {
         </button>
       </div>
 
-      <div className="mb-2 font-mono text-[10px] tracking-widest text-white/40">
-        <span>{`// ${t('memory.hint').replace('{n}', characters.length)}`}</span>
+      <div className="mb-2 text-[11px] tracking-wide text-white/40">
+        {t('memory.hint').replace('{n}', characters.length)}
       </div>
 
       {characters.length === 0 ? (
         <div className="py-8 text-center text-white/30">
           <Users className="mx-auto mb-2 h-8 w-8 opacity-40" />
-          <div className="font-mono text-[10px] tracking-widest">{`// ${t('common.empty').toUpperCase()}`}</div>
+          <div className="text-xs tracking-wide text-white/40">{t('common.empty')}</div>
           <div className="mt-1 text-[11px]">{t('memory.empty')}</div>
         </div>
       ) : (

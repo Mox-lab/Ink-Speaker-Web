@@ -22,6 +22,7 @@ export const outline = {
   'outline.generated': 'Generated {n}-chapter outline',
   'outline.continued': 'Appended {n} chapters',
   'outline.flowEmpty': 'No outline yet. Enter a theme above and click "Generate"',
+  'outline.nodeCount': '{n} nodes total',
   'outline.flowTitle': 'Outline Flow',
   'outline.fullText': 'Full outline (editable)',
   'outline.detail': 'Detail',
@@ -40,4 +41,6 @@ export const outline = {
   'outline.loadedVersion': 'Loaded v{n}',
   'outline.noOutline': 'No active outline found. Save one in the Outline page first',
   'outline.loadedSegment': 'Loaded outline segment #{n}',
+  'outline.jumpToChapter': 'Write this chapter',
+  'outline.prefilledFromOutline': 'Prefilled from outline node',
 };

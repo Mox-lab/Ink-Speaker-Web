@@ -192,8 +192,8 @@ export default function Login() {
               {loading && <div className="sf-loader-bar mt-4" />}
 
               {/* 底部提示 */}
-              <div className="mt-5 text-center font-mono text-[10px] tracking-widest text-white/20">
-                // {t('login.hint') || '默认账号 admin / admin123'}
+              <div className="mt-5 text-center text-[11px] tracking-wide text-white/30">
+                {t('login.hint') || '默认账号 admin / admin123'}
               </div>
             </form>
 
