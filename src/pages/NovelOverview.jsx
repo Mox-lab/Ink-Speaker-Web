@@ -158,6 +158,82 @@ export default function NovelOverview() {
     }
   };
 
+  // 待办看板:根据统计推导出建议项
+  // 注意:useMemo 必须在任何早期 return 之前调用,否则违反 Hooks 规则
+  const todos = useMemo(() => {
+    if (!overview) return [];
+    const items = [];
+    if ((overview.outlineCount ?? 0) === 0) {
+      items.push({
+        key: 'noOutline',
+        actionKey: 'gotoOutline',
+        to: `/novels/${urlNovelId}/outline`
+      });
+    } else if (!overview.hasActiveOutline) {
+      items.push({
+        key: 'outlineInactive',
+        actionKey: 'gotoOutline',
+        to: `/novels/${urlNovelId}/outline`
+      });
+    }
+    if ((overview.chapterCount ?? 0) === 0) {
+      items.push({
+        key: 'noChapter',
+        actionKey: 'gotoChapter',
+        to: `/novels/${urlNovelId}/chapter`
+      });
+    }
+    if ((overview.characterCount ?? 0) === 0) {
+      items.push({
+        key: 'noCharacter',
+        actionKey: 'gotoCharacter',
+        to: `/novels/${urlNovelId}/character`
+      });
+    }
+    if ((overview.unresolvedIssueCount ?? 0) > 0) {
+      items.push({
+        key: 'openIssues',
+        actionKey: 'gotoReview',
+        to: `/novels/${urlNovelId}/chapter`,
+        count: overview.unresolvedIssueCount
+      });
+    }
+    return items;
+  }, [overview, urlNovelId]);
+
+  // 快捷动作:基于当前小说状态给出最相关的 3 个动作
+  const quickActions = useMemo(() => {
+    if (!overview) return [];
+    const actions = [];
+    if ((overview.chapterCount ?? 0) === 0) {
+      actions.push({
+        key: 'gotoChapter',
+        icon: PenLine,
+        to: `/novels/${urlNovelId}/writing`
+      });
+    } else {
+      actions.push({
+        key: 'continueWriting',
+        icon: PenLine,
+        to: `/novels/${urlNovelId}/writing`,
+        labelKey: 'novel.overview.action.continueWriting'
+      });
+    }
+    actions.push({
+      key: 'gotoOutline',
+      icon: ListTree,
+      to: `/novels/${urlNovelId}/outline`,
+      labelKey: 'novel.overview.action.gotoOutline'
+    });
+    actions.push({
+      key: 'gotoCharacter',
+      icon: UserCircle2,
+      to: `/novels/${urlNovelId}/character`,
+      labelKey: 'novel.overview.action.gotoCharacter'
+    });
+    return actions;
+  }, [overview, urlNovelId]);
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-cyan-300/60">
@@ -231,79 +307,6 @@ export default function NovelOverview() {
 
   const recentChapters = overview.recentChapters || [];
   const outlines = overview.outlines || [];
-
-  // 待办看板:根据统计推导出建议项
-  const todos = useMemo(() => {
-    const items = [];
-    if ((overview.outlineCount ?? 0) === 0) {
-      items.push({
-        key: 'noOutline',
-        actionKey: 'gotoOutline',
-        to: `/novels/${urlNovelId}/outline`
-      });
-    } else if (!overview.hasActiveOutline) {
-      items.push({
-        key: 'outlineInactive',
-        actionKey: 'gotoOutline',
-        to: `/novels/${urlNovelId}/outline`
-      });
-    }
-    if ((overview.chapterCount ?? 0) === 0) {
-      items.push({
-        key: 'noChapter',
-        actionKey: 'gotoChapter',
-        to: `/novels/${urlNovelId}/chapter`
-      });
-    }
-    if ((overview.characterCount ?? 0) === 0) {
-      items.push({
-        key: 'noCharacter',
-        actionKey: 'gotoCharacter',
-        to: `/novels/${urlNovelId}/character`
-      });
-    }
-    if ((overview.unresolvedIssueCount ?? 0) > 0) {
-      items.push({
-        key: 'openIssues',
-        actionKey: 'gotoReview',
-        to: `/novels/${urlNovelId}/chapter`,
-        count: overview.unresolvedIssueCount
-      });
-    }
-    return items;
-  }, [overview, urlNovelId]);
-
-  // 快捷动作:基于当前小说状态给出最相关的 3 个动作
-  const quickActions = useMemo(() => {
-    const actions = [];
-    if ((overview.chapterCount ?? 0) === 0) {
-      actions.push({
-        key: 'gotoChapter',
-        icon: PenLine,
-        to: `/novels/${urlNovelId}/writing`
-      });
-    } else {
-      actions.push({
-        key: 'continueWriting',
-        icon: PenLine,
-        to: `/novels/${urlNovelId}/writing`,
-        labelKey: 'novel.overview.action.continueWriting'
-      });
-    }
-    actions.push({
-      key: 'gotoOutline',
-      icon: ListTree,
-      to: `/novels/${urlNovelId}/outline`,
-      labelKey: 'novel.overview.action.gotoOutline'
-    });
-    actions.push({
-      key: 'gotoCharacter',
-      icon: UserCircle2,
-      to: `/novels/${urlNovelId}/character`,
-      labelKey: 'novel.overview.action.gotoCharacter'
-    });
-    return actions;
-  }, [overview, urlNovelId]);
 
   return (
     <div className="flex min-h-screen flex-col">

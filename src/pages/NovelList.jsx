@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, BookOpen, Trash2, Loader2, RefreshCw, Globe, Lock, Sparkles, FileText } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,20 +27,27 @@ export default function NovelList() {
   const [loading, setLoading] = useState(true);
   const [novels, setNovels] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
+  // 防止 React StrictMode 开发模式下 useEffect 双重执行导致重复请求
+  const fetchedRef = useRef(false);
 
   const fetchNovels = useCallback(async () => {
     setLoading(true);
     try {
       const list = await listNovels();
-      setNovels(list || []);
+      // 防御性检查:确保 novels 始终为数组,避免后端返回非数组时 .map 崩溃
+      setNovels(Array.isArray(list) ? list : []);
     } catch (err) {
       toast.error(t('novel.list.fetch.failed') + ':' + (err.message || ''));
+      setNovels([]);
     } finally {
       setLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
+    // StrictMode 双重挂载时,第二次跳过(仅开发环境生效)
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     fetchNovels();
   }, [fetchNovels]);
 

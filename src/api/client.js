@@ -87,8 +87,10 @@ api.interceptors.response.use(
   (resp) => {
     // 后端统一返回 Result<T> = { code, message, data }
     // 业务失败(code !== 200)也走 HTTP 200,需在此识别并转 error 流程
+    // 注意:后端 Jackson 配置了 default-property-inclusion: non_null,
+    // 当 data 为 null 时 JSON 中不会出现 data 字段,因此只检查 'code' 即可
     const body = resp?.data;
-    if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
+    if (body && typeof body === 'object' && 'code' in body) {
       if (body.code === 200) {
         // 解包:把 resp.data 从 Result<T> 替换为 T,保持 axios response 形态
         resp.data = body.data;
@@ -100,6 +102,14 @@ api.interceptors.response.use(
         toast.error(`服务异常:${msg}`);
       } else {
         toast.error(msg);
+      }
+      // 业务码 2001(未鉴权):token 失效或被后端拒绝,清除并跳登录
+      if (body.code === 2001) {
+        tokenStore.clear();
+        // 避免在登录页自身跳转死循环
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
       const bizError = new Error(msg);
       bizError.businessCode = body.code;
