@@ -1,13 +1,13 @@
 # ============================================================
-# Ink Speaker 前端镜像构建 + 推送阿里云 ACR
+# Ink Realm 前端镜像构建 + 推送阿里云 ACR
 # ============================================================
 # 触发:
 #   - push 到 main 分支
 #   - 手动触发
 #
 # 产物:
-#   - registry.cn-shenzhen.aliyuncs.com/<命名空间>/ink-speaker-web:<短SHA>
-#   - registry.cn-shenzhen.aliyuncs.com/<命名空间>/ink-speaker-web:latest
+#   - registry.cn-shenzhen.aliyuncs.com/<命名空间>/ink-realm-web:<短SHA>
+#   - registry.cn-shenzhen.aliyuncs.com/<命名空间>/ink-realm-web:latest
 # ============================================================
 name: Build Frontend Image
 
@@ -44,7 +44,7 @@ jobs:
         id: meta
         run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "image=${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/ink-speaker-web" >> $GITHUB_OUTPUT
+          echo "image=${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}/ink-realm-web" >> $GITHUB_OUTPUT
 
       - name: Build and push
         uses: docker/build-push-action@v5
