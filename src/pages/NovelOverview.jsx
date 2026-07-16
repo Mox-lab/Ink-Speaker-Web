@@ -18,14 +18,25 @@ import {
   ChevronDown,
   FileText,
   FileType2,
-  Braces
+  Braces,
+  Sparkles,
+  Target,
+  Swords,
+  Users,
+  Flag,
+  ShieldAlert
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { deleteNovel, exportNovel, getNovelOverview } from '../api/index.js';
+import {
+  deleteNovel,
+  exportNovel,
+  getContinuationSuggestion,
+  getNovelOverview
+} from '../api/index.js';
 import { useI18n } from '../context/I18nContext.jsx';
 import { useNovelContext } from '../context/NovelContext.jsx';
 import { writeCachedNovelTitle } from '../components/NovelBreadcrumbBar.jsx';
-import { pushRecentNovel } from '../components/RecentNovels.jsx';
+import NovelTimeline from '../components/NovelTimeline.jsx';
 
 /**
  * 小说总览页(进入小说后第一屏)。
@@ -52,6 +63,10 @@ export default function NovelOverview() {
   const [exportOpen, setExportOpen] = useState(false);
   const exportMenuRef = useRef(null);
 
+  // BASE-12 AI 续写建议
+  const [suggestion, setSuggestion] = useState(null);
+  const [suggesting, setSuggesting] = useState(false);
+
   // 同步到 NovelContext(使请求拦截器注入 X-Novel-Id)
   useEffect(() => {
     const id = Number(urlNovelId);
@@ -68,8 +83,7 @@ export default function NovelOverview() {
       if (data) {
         // 缓存标题供 NovelBreadcrumbBar 中间段使用
         writeCachedNovelTitle(urlNovelId, data.title);
-        // 推入最近访问列表(UX-10)
-        pushRecentNovel({ id: data.id || Number(urlNovelId), title: data.title, author: data.author });
+        // 最近点击排序由 NovelList 在进入时记录,此处无需重复推送
       }
     } catch (err) {
       toast.error(t('novel.overview.fetch.failed') + ':' + (err.message || ''));
@@ -128,6 +142,22 @@ export default function NovelOverview() {
   const handleEditInfo = () => {
     navigate(`/novels/${urlNovelId}/edit`);
   };
+
+  // BASE-12:生成 AI 续写建议
+  const handleSuggest = useCallback(async () => {
+    if (suggesting) return;
+    setSuggesting(true);
+    toast.info(t('novel.continuation.loading'));
+    try {
+      const data = await getContinuationSuggestion(urlNovelId);
+      setSuggestion(data || null);
+      toast.success(t('novel.continuation.title'));
+    } catch (err) {
+      toast.error(t('novel.continuation.failed') + ':' + (err?.message || ''));
+    } finally {
+      setSuggesting(false);
+    }
+  }, [suggesting, t, urlNovelId]);
 
   const handleDelete = async () => {
     if (!overview) return;
@@ -307,9 +337,20 @@ export default function NovelOverview() {
 
   const recentChapters = overview.recentChapters || [];
   const outlines = overview.outlines || [];
+  const timeline = overview.timeline || [];
+
+  // 格式化建议生成时间
+  const formatGeneratedAt = (ts) => {
+    if (!ts) return '';
+    try {
+      return new Date(ts).toLocaleString();
+    } catch {
+      return String(ts);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-full flex-col">
       {/* 头部 */}
       <header className="border-b border-cyan-400/10 px-4 py-6 sm:px-8 sm:py-8">
         <div className="flex items-start gap-4">
@@ -329,7 +370,7 @@ export default function NovelOverview() {
               className="mt-2 text-2xl font-bold leading-tight text-white"
               style={{
                 fontFamily:
-                  '"STXingkai", "华文行楷", "Xingkai SC", "楷体", "KaiTi", "STKaiti", cursive'
+                  '"Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif'
               }}
             >
               {overview.title || '(未命名)'}
@@ -608,6 +649,137 @@ export default function NovelOverview() {
             )}
           </section>
         </div>
+
+        {/* BASE-08 工作台时间线 */}
+        <NovelTimeline events={timeline} />
+
+        {/* BASE-12 AI 续写建议 */}
+        <section className="rounded border border-cyan-400/15 bg-black/40 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-cyan-400/10 pb-2">
+            <div className="flex items-center gap-2 text-[11px] tracking-widest text-cyan-300/60">
+              <Sparkles className="h-3.5 w-3.5" />
+              {t('novel.continuation.title')}
+            </div>
+            <div className="flex items-center gap-2">
+              {suggestion?.generatedAt && (
+                <span className="text-[10px] tracking-wider text-white/30">
+                  {t('novel.continuation.generatedAt').replace(
+                    '{{time}}',
+                    formatGeneratedAt(suggestion.generatedAt)
+                  )}
+                </span>
+              )}
+              <button
+                onClick={handleSuggest}
+                disabled={suggesting}
+                className="flex items-center gap-1.5 rounded border border-cyan-400/40 bg-cyan-400/10 px-3 py-1 text-[11px] tracking-wider text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50"
+              >
+                {suggesting ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3 w-3" />
+                )}
+                {t('novel.continuation.action')}
+              </button>
+            </div>
+          </div>
+
+          <p className="mb-3 text-[11px] leading-relaxed text-white/40">
+            {t('novel.continuation.subtitle')}
+          </p>
+
+          {!suggestion ? (
+            <div className="flex flex-col items-center gap-2 py-6 text-center">
+              <Sparkles className="h-6 w-6 text-cyan-300/40" />
+              <div className="text-[12px] text-cyan-300/70">
+                {t('novel.continuation.empty.title')}
+              </div>
+              <div className="max-w-md text-[11px] leading-relaxed text-white/40">
+                {t('novel.continuation.empty.desc')}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {suggestion.title && (
+                <div className="flex items-center gap-2 rounded border border-cyan-400/20 bg-cyan-400/[0.04] px-3 py-2">
+                  <span className="rounded bg-cyan-400/15 px-2 py-0.5 font-mono text-[10px] tracking-widest text-cyan-300">
+                    {t('novel.continuation.nextChapter').replace(
+                      '{{no}}',
+                      String(suggestion.nextChapterNo ?? '?')
+                    )}
+                  </span>
+                  <span className="text-sm font-medium text-white">
+                    {suggestion.title}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <SuggestionField
+                  icon={Target}
+                  label={t('novel.continuation.field.direction')}
+                  value={suggestion.direction}
+                />
+                <SuggestionField
+                  icon={Swords}
+                  label={t('novel.continuation.field.conflict')}
+                  value={suggestion.conflict}
+                />
+                <SuggestionField
+                  icon={Flag}
+                  label={t('novel.continuation.field.hook')}
+                  value={suggestion.hook}
+                />
+                <SuggestionField
+                  icon={Users}
+                  label={t('novel.continuation.field.keyCharacters')}
+                  value={
+                    Array.isArray(suggestion.keyCharacters) &&
+                    suggestion.keyCharacters.length > 0
+                      ? suggestion.keyCharacters.join('、')
+                      : ''
+                  }
+                />
+              </div>
+
+              {Array.isArray(suggestion.risks) && suggestion.risks.length > 0 && (
+                <div className="rounded border border-amber-400/20 bg-amber-400/[0.04] p-3">
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[11px] tracking-wider text-amber-300/80">
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                    {t('novel.continuation.field.risks')}
+                  </div>
+                  <ul className="ml-4 list-disc space-y-1 text-[11px] leading-relaxed text-white/60">
+                    {suggestion.risks.map((r, idx) => (
+                      <li key={idx}>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 续写建议单字段渲染组件(BASE-12)。
+ * @param {object} props
+ * @param {React.ComponentType<{className?: string}>} props.icon
+ * @param {string} props.label
+ * @param {string} [props.value]
+ */
+function SuggestionField({ icon: Icon, label, value }) {
+  const { t } = useI18n();
+  return (
+    <div className="rounded border border-white/10 bg-black/40 p-2.5">
+      <div className="mb-1 flex items-center gap-1.5 text-[10px] tracking-widest text-cyan-300/50">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <div className="text-[12px] leading-relaxed text-white/80">
+        {value || t('novel.continuation.field.empty')}
       </div>
     </div>
   );

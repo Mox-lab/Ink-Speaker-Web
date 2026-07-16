@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Cpu, Activity, Gauge } from 'lucide-react';
+import { Cpu, Activity, Gauge, X } from 'lucide-react';
 import { useI18n } from '../context/I18nContext.jsx';
 import { STORAGE_KEYS } from '../constants/storage.js';
 import { loadLocal } from '../utils/storage.js';
 
 /**
- * Token 用量统计面板(P2 前端面板补齐)。
- * <p>显示当前会话最近一次 LLM 调用的 token 用量与累计用量。
- * 数据来源:后端通过 actuator metrics 暴露的 langchain4j 自定义指标
- * (当前阶段先展示本地 sessionStorage 中的累计值,后续接入 Prometheus 拉取)。</p>
+ * Token 用量统计面板(UX-12 整合)。
  *
- * 简化策略:监听 localStorage 中的 ink_speaker_token_log,每次章节/大纲/对话调用后追加。
+ * <p>两种形态:</p>
+ * <ul>
+ *   <li>`variant="floating"`(默认,用于 /novels 右下角浮动卡片):可折叠,
+ *       显示本月累计 calls / chars / 预估 tokens + 预算进度条</li>
+ *   <li>`variant="inline"`(用于 Lore memory tab 旧位置):保留原内嵌面板样式</li>
+ *   <li>`variant="sidebar"`(用于主框架右侧栏底部):非浮动、非独立面板的紧凑内嵌形态</li>
+ * </ul>
+ *
+ * <p>数据来源:localStorage 中的 ink_realm_token_log,由 Chapter 生成时 appendLocal 追加。
+ * 本月筛选:按当前年-月过滤 at 时间戳。</p>
  */
-export default function UsagePanel() {
+export default function UsagePanel({ variant = 'floating' }) {
   const { t } = useI18n();
   const [usage, setUsage] = useState({ calls: 0, chars: 0, lastAt: '-' });
   const [budget, setBudget] = useState({ used: 0, total: 6000 });
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const load = () => {
@@ -25,11 +32,26 @@ export default function UsagePanel() {
         setBudget({ used: 0, total: 6000 });
         return;
       }
-      const calls = arr.length;
-      const chars = arr.reduce((s, x) => s + (x.chars || 0), 0);
-      const lastAt = arr.length ? new Date(arr[arr.length - 1].at).toLocaleTimeString() : '-';
+      // 本月筛选:UX-12 要求"本月累计"
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const monthArr = arr.filter((x) => {
+        try {
+          const d = new Date(x.at);
+          return d.getFullYear() === year && d.getMonth() === month;
+        } catch {
+          return false;
+        }
+      });
+      const calls = monthArr.length;
+      const chars = monthArr.reduce((s, x) => s + (x.chars || 0), 0);
+      const lastAt =
+        monthArr.length > 0
+          ? new Date(monthArr[monthArr.length - 1].at).toLocaleString()
+          : '-';
       setUsage({ calls, chars, lastAt });
-      // 简单估算 token:中文 1.5 / 字符
+      // 简单估算 token:中文 1.5 / 字符,英文 0.25 / 字符,取 0.7 折中
       const used = Math.ceil(chars * 0.7);
       setBudget({ used, total: 6000 });
     };
@@ -40,50 +62,170 @@ export default function UsagePanel() {
 
   const ratio = Math.min(100, (budget.used / budget.total) * 100);
 
+  if (variant === 'inline') {
+    return (
+      <div className="sf-panel-hud p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Activity className="h-3.5 w-3.5 text-cyan-300" />
+            <span className="sf-heading text-xs">{t('usage.title')}</span>
+          </div>
+          <span className="font-mono text-[10px] text-white/30">{usage.lastAt}</span>
+        </div>
+
+        <div className="mb-3 grid grid-cols-3 gap-2 font-mono">
+          <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
+            <div className="text-[9px] tracking-widest text-white/40">CALLS</div>
+            <div className="text-lg text-cyan-300">{usage.calls}</div>
+          </div>
+          <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
+            <div className="text-[9px] tracking-widest text-white/40">CHARS</div>
+            <div className="text-lg text-cyan-300">{usage.chars}</div>
+          </div>
+          <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
+            <div className="text-[9px] tracking-widest text-white/40">≈TOKENS</div>
+            <div className="text-lg text-cyan-300">{budget.used}</div>
+          </div>
+        </div>
+
+        <div className="mb-1 flex items-center justify-between font-mono text-[10px]">
+          <span className="flex items-center gap-1 text-white/50">
+            <Gauge className="h-3 w-3" />{' '}
+            {t('usage.budget').replace('{used}', budget.used).replace('{total}', budget.total)}
+          </span>
+          <span className={ratio > 80 ? 'text-rose-400' : 'text-cyan-300/60'}>
+            {ratio.toFixed(0)}%
+          </span>
+        </div>
+        <div className="h-1.5 overflow-hidden rounded bg-black/60">
+          <div
+            className={`h-full transition-all ${ratioColorClass(ratio)}`}
+            style={{ width: `${ratio}%` }}
+          />
+        </div>
+        <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-white/30">
+          <Cpu className="h-2.5 w-2.5" />
+          {t('usage.dataSource')}
+        </div>
+      </div>
+    );
+  }
+
+  // sidebar 变体:嵌入主框架右侧栏底部(非浮动、非独立面板)
+  if (variant === 'sidebar') {
+    return (
+      <div className="px-3 py-3">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Activity className="h-3.5 w-3.5 text-cyan-300" />
+            <span className="sf-heading text-xs tracking-wider text-cyan-300/80">
+              {t('usage.title')}
+            </span>
+            <span className="rounded bg-cyan-400/10 px-1 py-0.5 text-[10px] tracking-widest text-cyan-300/60">
+              {t('usage.monthLabel')}
+            </span>
+          </div>
+          <span className="font-mono text-[11px] text-white/30">{usage.lastAt}</span>
+        </div>
+
+        <div className="mb-2 grid grid-cols-3 gap-1.5 font-mono">
+          <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+            <div className="text-[10px] tracking-widest text-white/40">CALLS</div>
+            <div className="text-base text-cyan-300">{usage.calls}</div>
+          </div>
+          <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+            <div className="text-[10px] tracking-widest text-white/40">CHARS</div>
+            <div className="text-base text-cyan-300">{usage.chars}</div>
+          </div>
+          <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+            <div className="text-[10px] tracking-widest text-white/40">≈TOKENS</div>
+            <div className="text-base text-cyan-300">{budget.used}</div>
+          </div>
+        </div>
+
+        <div className="mb-1 flex items-center justify-between font-mono text-[11px]">
+          <span className="flex items-center gap-1 text-white/50">
+            <Gauge className="h-3 w-3" />
+            {t('usage.budget').replace('{used}', budget.used).replace('{total}', budget.total)}
+          </span>
+          <span className={ratio > 80 ? 'text-rose-400' : 'text-cyan-300/60'}>
+            {ratio.toFixed(0)}%
+          </span>
+        </div>
+        <div className="h-1 overflow-hidden rounded bg-black/60">
+          <div
+            className={`h-full transition-all ${ratioColorClass(ratio)}`}
+            style={{ width: `${ratio}%` }}
+          />
+        </div>
+        <div className="mt-1.5 flex items-center gap-1 font-mono text-[10px] tracking-widest text-white/30">
+          <Cpu className="h-3 w-3" />
+          {t('usage.dataSource')}
+        </div>
+      </div>
+    );
+  }
+
+  // floating 变体:/novels 右下角浮动卡片
   return (
-    <div className="sf-panel-hud p-4">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="fixed bottom-4 right-4 z-40 w-64 rounded border border-cyan-400/20 bg-black/70 backdrop-blur-md shadow-lg">
+      <div className="flex items-center justify-between border-b border-cyan-400/10 px-3 py-2">
         <div className="flex items-center gap-2">
           <Activity className="h-3.5 w-3.5 text-cyan-300" />
-          <span className="sf-heading text-xs">{t('usage.title')}</span>
+          <span className="sf-heading text-[11px] tracking-wider text-cyan-300/80">
+            {t('usage.title')}
+          </span>
+          <span className="rounded bg-cyan-400/10 px-1.5 py-0.5 text-[9px] tracking-widest text-cyan-300/60">
+            {t('usage.monthLabel')}
+          </span>
         </div>
-        <span className="font-mono text-[10px] text-white/30">{usage.lastAt}</span>
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className="rounded p-0.5 text-white/40 transition hover:bg-white/5 hover:text-white"
+          title={collapsed ? t('usage.expand') : t('usage.collapse')}
+        >
+          <X className="h-3 w-3" />
+        </button>
       </div>
+      {!collapsed && (
+        <div className="px-3 py-3">
+          <div className="mb-2 grid grid-cols-3 gap-1.5 font-mono">
+            <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+              <div className="text-[8px] tracking-widest text-white/40">CALLS</div>
+              <div className="text-sm text-cyan-300">{usage.calls}</div>
+            </div>
+            <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+              <div className="text-[8px] tracking-widest text-white/40">CHARS</div>
+              <div className="text-sm text-cyan-300">{usage.chars}</div>
+            </div>
+            <div className="rounded border border-cyan-400/10 bg-black/40 px-1.5 py-1.5 text-center">
+              <div className="text-[8px] tracking-widest text-white/40">≈TOKENS</div>
+              <div className="text-sm text-cyan-300">{budget.used}</div>
+            </div>
+          </div>
 
-      <div className="mb-3 grid grid-cols-3 gap-2 font-mono">
-        <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
-          <div className="text-[9px] tracking-widest text-white/40">CALLS</div>
-          <div className="text-lg text-cyan-300">{usage.calls}</div>
+          <div className="mb-1 flex items-center justify-between font-mono text-[9px]">
+            <span className="flex items-center gap-1 text-white/50">
+              <Gauge className="h-2.5 w-2.5" />
+              {t('usage.budget').replace('{used}', budget.used).replace('{total}', budget.total)}
+            </span>
+            <span className={ratio > 80 ? 'text-rose-400' : 'text-cyan-300/60'}>
+              {ratio.toFixed(0)}%
+            </span>
+          </div>
+          <div className="h-1 overflow-hidden rounded bg-black/60">
+            <div
+              className={`h-full transition-all ${ratioColorClass(ratio)}`}
+              style={{ width: `${ratio}%` }}
+            />
+          </div>
+          {usage.lastAt !== '-' && (
+            <div className="mt-2 font-mono text-[8px] tracking-widest text-white/30">
+              {t('usage.lastAt')}: {usage.lastAt}
+            </div>
+          )}
         </div>
-        <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
-          <div className="text-[9px] tracking-widest text-white/40">CHARS</div>
-          <div className="text-lg text-cyan-300">{usage.chars}</div>
-        </div>
-        <div className="rounded border border-cyan-400/15 bg-black/40 px-2 py-2 text-center">
-          <div className="text-[9px] tracking-widest text-white/40">≈TOKENS</div>
-          <div className="text-lg text-cyan-300">{budget.used}</div>
-        </div>
-      </div>
-
-      <div className="mb-1 flex items-center justify-between font-mono text-[10px]">
-        <span className="flex items-center gap-1 text-white/50">
-          <Gauge className="h-3 w-3" />{' '}
-          {t('usage.budget').replace('{used}', budget.used).replace('{total}', budget.total)}
-        </span>
-        <span className={ratio > 80 ? 'text-rose-400' : 'text-cyan-300/60'}>
-          {ratio.toFixed(0)}%
-        </span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded bg-black/60">
-        <div
-          className={`h-full transition-all ${ratioColorClass(ratio)}`}
-          style={{ width: `${ratio}%` }}
-        />
-      </div>
-      <div className="mt-2 flex items-center gap-1 font-mono text-[9px] tracking-widest text-white/30">
-        <Cpu className="h-2.5 w-2.5" />
-        {t('usage.dataSource')}
-      </div>
+      )}
     </div>
   );
 }

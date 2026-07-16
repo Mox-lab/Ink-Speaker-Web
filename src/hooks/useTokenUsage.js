@@ -4,7 +4,7 @@ import { loadLocal } from '../utils/storage.js';
 
 /**
  * Token 用量统计 Hook。
- * 监听 localStorage 中的 ink_speaker_token_log,聚合 calls / chars / 预估 tokens。
+ * 监听 localStorage 中的 ink_realm_token_log,聚合 calls / chars / 预估 tokens。
  */
 export function useTokenUsage() {
   const [usage, setUsage] = useState({ calls: 0, chars: 0, tokens: 0, entries: [] });

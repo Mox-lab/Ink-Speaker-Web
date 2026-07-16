@@ -3,8 +3,9 @@
  * @author songshan.li (ID: 17099618)
  */
 export const common = {
-  'common.appName': 'Ink Speaker',
+  'common.appName': 'Ink Realm',
   'common.account': 'Account',
+  'common.nickname': 'Nickname',
   'common.password': 'Password',
   'common.login': 'Login',
   'common.loggingIn': 'Logging in...',
@@ -70,4 +71,5 @@ export const common = {
   'cmd.toggle.theme': 'Cycle theme',
   'cmd.refresh': 'Refresh page',
   'cmd.trigger': 'Command palette',
+  'common.forbidden': 'You do not have permission to view this page',
 };

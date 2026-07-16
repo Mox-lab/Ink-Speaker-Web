@@ -15,6 +15,7 @@ import { memory } from './memory.js';
 import { review } from './review.js';
 import { theme } from './theme.js';
 import { novel } from './novel.js';
+import { admin } from './admin.js';
 
 /** 中文完整词典 */
 export const zh = {
@@ -31,4 +32,5 @@ export const zh = {
   ...review,
   ...theme,
   ...novel,
+  ...admin,
 };

@@ -3,8 +3,9 @@
  * @author songshan.li (ID: 17099618)
  */
 export const common = {
-  'common.appName': '墨语者',
+  'common.appName': '墨域',
   'common.account': '账号',
+  'common.nickname': '昵称',
   'common.password': '密码',
   'common.login': '登录',
   'common.loggingIn': '登录中...',
@@ -70,4 +71,5 @@ export const common = {
   'cmd.toggle.theme': '切换主题',
   'cmd.refresh': '刷新页面',
   'cmd.trigger': '命令面板',
+  'common.forbidden': '无权限访问该页面',
 };

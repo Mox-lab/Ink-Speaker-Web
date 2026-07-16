@@ -4,7 +4,7 @@
  */
 export const theme = {
   'theme.switch': '切换主题',
-  'theme.scifi': '科幻风',
-  'theme.linear': 'Linear 风',
-  'theme.stripe': 'Stripe 风',
+  'theme.scifi': '科幻',
+  'theme.ink': '水墨',
+  'theme.bubble': '泡沫',
 };

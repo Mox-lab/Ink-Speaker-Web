@@ -11,6 +11,11 @@ import Lore from './pages/Lore.jsx';
 import NovelList from './pages/NovelList.jsx';
 import NovelEditor from './pages/NovelEditor.jsx';
 import NovelOverview from './pages/NovelOverview.jsx';
+import SharedNovelList from './pages/SharedNovelList.jsx';
+import SharedNovelBrowse from './pages/SharedNovelBrowse.jsx';
+import AdminNovels from './pages/AdminNovels.jsx';
+import AdminUsers from './pages/AdminUsers.jsx';
+import Forbidden from './pages/Forbidden.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 /**
@@ -59,6 +64,10 @@ export default function App() {
         {/* 编辑小说基础信息(在 NovelLayout 之外,与 NovelEditor 自身的预填/保存流程一致) */}
         <Route path="novels/:novelId/edit" element={<NovelEditor mode="edit" />} />
 
+        {/* BASE-09 公共参考池:列表 + 只读详情(任何登录用户可见,不进入 NovelLayout) */}
+        <Route path="novels/shared" element={<SharedNovelList />} />
+        <Route path="novels/shared/:novelId" element={<SharedNovelBrowse />} />
+
         {/* 某本小说工作台(嵌套路由,共享 NovelLayout + NovelContextProvider) */}
         <Route path="novels/:novelId" element={<NovelLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
@@ -70,6 +79,26 @@ export default function App() {
           <Route path="lore" element={<Lore />} />
         </Route>
       </Route>
+
+      {/* 管理后台(仅 ROLE_ADMIN,非管理员跳 403) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminNovels />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminUsers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="/403" element={<Forbidden />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

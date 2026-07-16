@@ -26,9 +26,9 @@ function NovelLayoutInner() {
   }, [novelId, setActiveNovelId]);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <NovelBreadcrumbBar />
-      <div className="flex-1 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         <Outlet />
       </div>
     </div>

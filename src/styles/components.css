@@ -5,6 +5,15 @@
  * @author songshan.li (ID: 17099618)
  */
 
+/* ================ 系统 Logo ================ */
+
+/* 颜色继承 currentColor,默认取主题强调色,随三套主题自动变色 */
+.sf-logo {
+  color: var(--sf-accent);
+  display: block;
+  flex-shrink: 0;
+}
+
 /* ================ 玻璃面板 ================ */
 
 .sf-panel {
@@ -271,3 +280,15 @@
 /* ================ 工具动画类 ================ */
 
 .sf-flicker { animation: sf-flicker 3s ease-in-out infinite; }
+
+/* ================ 小说卡片墙(#54) ================ */
+
+/* 自适应多列网格:窄屏单列,中屏两列,宽屏三列 */
+.novel-card-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+/* 折叠态侧栏宽度收起(由 MainLayout 通过 w-0 控制,此处仅作语义占位) */
+.sidebar-collapsed { width: 0; overflow: hidden; }

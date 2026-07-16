@@ -10,8 +10,8 @@ import { useAuth } from '../context/AuthContext.jsx';
  * @param {React.ReactNode} props.children 受保护子节点
  * @returns {JSX.Element}
  */
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+export default function ProtectedRoute({ children, requireAdmin = false }) {
+  const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -24,6 +24,14 @@ export default function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  // 管理后台路由:非管理员重定向到 403 页
+  if (requireAdmin) {
+    const roles = user?.roles || [];
+    if (!roles.includes('ROLE_ADMIN')) {
+      return <Navigate to="/403" replace />;
+    }
   }
 
   return children;

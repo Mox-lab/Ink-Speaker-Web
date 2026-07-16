@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Save, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { createNovel, getNovel, updateNovel } from '../api/index.js';
+import { saveCharactersBatch, saveSetting, saveOutline } from '../api/data.js';
 import { useI18n } from '../context/I18nContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
+import { trackEvent } from '../utils/track.js';
+import { FUNNEL_EVENTS } from '../constants/funnelEvents.js';
 
 /**
  * 小说创建 / 编辑表单。
@@ -13,7 +15,7 @@ import { useAuth } from '../context/AuthContext.jsx';
  * <ul>
  *   <li>mode="create" → 调 createNovel,成功后跳 /novels/:id/overview</li>
  *   <li>mode="edit"  → 调 getNovel 预填,保存调 updateNovel,成功后返回上一屏</li>
- *   <li>作者字段留空时,后端兜底使用当前用户名,前端仅作展示提示</li>
+ *   <li>优化清单 #56:移除作者输入框,后端强制使用当前登录用户的昵称(回退用户名)作为 author</li>
  *   <li>create 模式支持从路由 state.template 读取模板预填(冷启动引导)</li>
  * </ul>
  *
@@ -21,7 +23,6 @@ import { useAuth } from '../context/AuthContext.jsx';
  */
 export default function NovelEditor({ mode = 'create' }) {
   const { t } = useI18n();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { novelId } = useParams();
@@ -33,12 +34,11 @@ export default function NovelEditor({ mode = 'create' }) {
     if (template?.prefilled) {
       return {
         title: template.prefilled.title || '',
-        author: template.prefilled.author || '',
         description: template.prefilled.description || '',
         sharedForReference: !!template.prefilled.sharedForReference
       };
     }
-    return { title: '', author: '', description: '', sharedForReference: false };
+    return { title: '', description: '', sharedForReference: false };
   });
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
@@ -54,7 +54,6 @@ export default function NovelEditor({ mode = 'create' }) {
         if (cancelled) return;
         setForm({
           title: data?.title || '',
-          author: data?.author || '',
           description: data?.description || '',
           sharedForReference: !!data?.sharedForReference
         });
@@ -84,7 +83,6 @@ export default function NovelEditor({ mode = 'create' }) {
     try {
       const payload = {
         title: form.title.trim(),
-        author: form.author.trim() || null,
         description: form.description.trim() || null,
         sharedForReference: !!form.sharedForReference
       };
@@ -94,8 +92,41 @@ export default function NovelEditor({ mode = 'create' }) {
         navigate(`/novels/${novelId}/overview`, { replace: true });
       } else {
         const created = await createNovel(payload);
-        toast.success(t('novel.editor.create.success'));
         const newId = created?.id;
+        // UX-11 漏斗:创建小说成功
+        trackEvent(FUNNEL_EVENTS.CREATE_NOVEL, { title: payload.title }, newId);
+
+        // 应用模板预填:串行写入人物/设定/大纲,失败不阻塞主流程
+        let appliedTemplate = false;
+        if (newId && template?.prefilled) {
+          const { characters = [], worldSettings = [], outline } = template.prefilled;
+          try {
+            // 人物:一次批量写入(后端仅提供批量端点)
+            if (characters.length) {
+              await saveCharactersBatch(characters, newId);
+            }
+            // 世界观设定:逐条写入
+            for (const ws of worldSettings) {
+              await saveSetting({ ...ws, novelId: newId });
+            }
+            // 大纲:写入即自动激活(后端 saveOutline 默认 isActive=true)
+            if (outline) {
+              await saveOutline({ ...outline, novelId: newId });
+            }
+            appliedTemplate = true;
+          } catch (err) {
+            // 部分成功:小说主表已建,预填内容失败给出提示但不阻塞跳转
+            toast.warn(t('novel.template.apply.partial'));
+          }
+        }
+
+        // 提示:应用模板成功用模板文案,否则用通用创建文案
+        if (appliedTemplate) {
+          toast.success(t('novel.template.apply.success'));
+        } else {
+          toast.success(t('novel.editor.create.success'));
+        }
+
         if (newId) {
           navigate(`/novels/${newId}/overview`, { replace: true });
         } else {
@@ -127,7 +158,7 @@ export default function NovelEditor({ mode = 'create' }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-full flex-col">
       <header className="border-b border-cyan-400/10 px-4 py-6 sm:px-8 sm:py-8">
         <div className="flex items-start gap-4">
           <button
@@ -172,25 +203,6 @@ export default function NovelEditor({ mode = 'create' }) {
               maxLength={200}
               className="sf-input w-full"
               required
-            />
-          </div>
-
-          {/* 作者 */}
-          <div>
-            <label className="mb-1 block text-[11px] tracking-widest text-cyan-300/60">
-              {t('novel.editor.field.author')}
-            </label>
-            <input
-              type="text"
-              value={form.author}
-              onChange={(e) => handleChange('author', e.target.value)}
-              placeholder={
-                user?.username
-                  ? `${t('novel.editor.field.author.placeholder')} (${user.username})`
-                  : t('novel.editor.field.author.placeholder')
-              }
-              maxLength={100}
-              className="sf-input w-full"
             />
           </div>
 
@@ -256,3 +268,4 @@ export default function NovelEditor({ mode = 'create' }) {
     </div>
   );
 }
+

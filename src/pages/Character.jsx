@@ -443,7 +443,7 @@ export default function Character() {
   const hasCharacters = characters.length > 0;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div className="min-h-full p-4 sm:p-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="sf-heading">{t('character.heading')}</div>

@@ -34,6 +34,17 @@ export async function listSharedNovels() {
   return data;
 }
 
+/**
+ * 取公共参考池中某本小说的只读详情(BASE-09)。
+ * 聚合脱敏基础信息 + 全部章节摘要 + 大纲版本 + 人物 + 设定。
+ * @param {number|string} id 小说 ID
+ * @returns {Promise<Object>} SharedNovelBrowseVo
+ */
+export async function getSharedNovelBrowse(id) {
+  const { data } = await api.get(`/data/novel/shared/${id}`);
+  return data;
+}
+
 /** 创建新小说。 */
 export async function createNovel(payload) {
   const { data } = await api.post('/data/novel', payload);
@@ -61,6 +72,19 @@ export async function deleteNovel(id) {
 /** 取小说概览(基础信息 + 各子模块统计 + 最近章节/大纲列表)。 */
 export async function getNovelOverview(id) {
   const { data } = await api.get(`/data/novel/${id}/overview`);
+  return data;
+}
+
+/**
+ * AI 续写建议(BASE-12)。
+ * <p>基于最近章节、激活大纲与人物档案预测下一章走向,返回结构化建议。
+ * 同步阻塞调用,前端按需触发(总览页"AI 续写建议"按钮)。</p>
+ *
+ * @param {number|string} id 小说 ID
+ * @returns {Promise<Object>} ContinuationSuggestionVo
+ */
+export async function getContinuationSuggestion(id) {
+  const { data } = await api.get(`/data/novel/${id}/continuation`);
   return data;
 }
 
@@ -188,6 +212,26 @@ export async function deleteCharacter(id) {
   return data;
 }
 
+/**
+ * 按名字模糊搜索人物(UX-06 写作侧边栏 @人物检索)。
+ * @param {string} [name] 姓名片段,空串返回全部
+ * @returns {Promise<Array>} 匹配的人物列表
+ */
+export async function searchCharactersByName(name) {
+  const { data } = await api.get('/data/character/by-name', { params: { name } });
+  return data;
+}
+
+/**
+ * 列出某人物出现的章节摘要(UX-06 人物卡片点击查看出现位置)。
+ * @param {number} characterId 人物 ID
+ * @returns {Promise<Array>} 章节摘要列表(按章节序号升序)
+ */
+export async function listCharacterAppears(characterId) {
+  const { data } = await api.get('/data/character/appears', { params: { characterId } });
+  return data;
+}
+
 /* ============== 世界观设定 ============== */
 
 /** 列出当前小说全部。 */
@@ -205,5 +249,37 @@ export async function saveSetting(payload) {
 /** 删除。 */
 export async function deleteSetting(id) {
   const { data } = await api.delete(`/data/setting/${id}`);
+  return data;
+}
+
+/**
+ * 按关键词模糊搜索世界观设定(UX-06 写作侧边栏设定 RAG 检索)。
+ * @param {string} [keyword] 关键词片段,空串返回全部
+ * @returns {Promise<Array>} 匹配的设定列表
+ */
+export async function searchSettings(keyword) {
+  const { data } = await api.get('/data/setting/search', { params: { keyword } });
+  return data;
+}
+
+/* ============== 章节历史版本快照(BASE-07) ============== */
+
+/**
+ * 列出某章节的全部历史快照(按时间倒序)。
+ * @param {number} chapterId 章节 ID
+ * @returns {Promise<Array>} 历史快照列表
+ */
+export async function listChapterHistory(chapterId) {
+  const { data } = await api.get('/data/chapter/history', { params: { chapterId } });
+  return data;
+}
+
+/**
+ * 取某条历史快照详情(含正文全文)。
+ * @param {number} historyId 历史 ID
+ * @returns {Promise<Object>} 历史快照详情
+ */
+export async function getChapterHistoryDetail(historyId) {
+  const { data } = await api.get(`/data/chapter/history/${historyId}`);
   return data;
 }

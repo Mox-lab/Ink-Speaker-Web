@@ -7,28 +7,28 @@
  */
 export const STORAGE_KEYS = {
   // 鉴权
-  ACCESS_TOKEN: 'ink_speaker_access_token',
-  REFRESH_TOKEN: 'ink_speaker_refresh_token',
+  ACCESS_TOKEN: 'ink_realm_access_token',
+  REFRESH_TOKEN: 'ink_realm_refresh_token',
 
   // 用户偏好
-  LANG: 'ink_speaker_lang',
-  THEME: 'ink_speaker_theme',
-  ACTIVE_NOVEL_ID: 'ink_speaker_active_novel_id',
+  LANG: 'ink_realm_lang',
+  THEME: 'ink_realm_theme',
+  ACTIVE_NOVEL_ID: 'ink_realm_active_novel_id',
 
   // 用量统计(跨页面共享)
-  TOKEN_LOG: 'ink_speaker_token_log',
+  TOKEN_LOG: 'ink_realm_token_log',
 
   // 草稿持久化(sessionStorage,按 novelId 隔离)
   // 业务代码应使用 draftKey(STORAGE_KEYS.DRAFT_*, novelId) 拼出最终 key
-  DRAFT_OUTLINE: 'ink_speaker_outline_state',
-  DRAFT_CHAPTER: 'ink_speaker_chapter_state',
-  DRAFT_CHARACTER: 'ink_speaker_character_state',
+  DRAFT_OUTLINE: 'ink_realm_outline_state',
+  DRAFT_CHAPTER: 'ink_realm_chapter_state',
+  DRAFT_CHARACTER: 'ink_realm_character_state',
 
   // 最近访问的小说列表(localStorage,跨会话保留)
-  RECENT_NOVELS: 'ink_speaker_recent_novels',
+  RECENT_NOVELS: 'ink_realm_recent_novels',
 
   // 通知中心(localStorage,简化方案:不引入后端推送)
-  NOTIFICATIONS: 'ink_speaker_notifications',
+  NOTIFICATIONS: 'ink_realm_notifications',
 };
 
 /**

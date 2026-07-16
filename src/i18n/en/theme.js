@@ -5,6 +5,6 @@
 export const theme = {
   'theme.switch': 'Switch theme',
   'theme.scifi': 'Sci-Fi',
-  'theme.linear': 'Linear',
-  'theme.stripe': 'Stripe',
+  'theme.ink': 'Ink',
+  'theme.bubble': 'Bubble',
 };

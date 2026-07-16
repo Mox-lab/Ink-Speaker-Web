@@ -10,17 +10,17 @@ import PropTypes from 'prop-types';
  * @param {string} [props.className=''] 附加类名
  * @returns {JSX.Element}
  */
-export default function LangSwitcher({ variant = 'ghost', className = '' }) {
+export default function LangSwitcher({ variant = 'ghost', className = '', size = 'h-3.5 w-3.5', padding = '!px-1.5 !py-1', btnClass = 'sf-btn-ghost' }) {
   const { isZh, toggle } = useI18n();
 
   if (variant === 'minimal') {
     return (
       <button
         onClick={toggle}
-        className={`rounded border border-cyan-400/15 bg-black/30 px-2 py-1 font-mono text-[10px] tracking-widest text-cyan-300/70 transition hover:border-cyan-300/50 hover:text-cyan-300 ${className}`}
+        className={`${btnClass} ${padding} transition ${className}`}
         title={isZh ? 'Switch to English' : '切换为中文'}
       >
-        {isZh ? 'EN' : '中'}
+        <Languages className={size} />
       </button>
     );
   }
@@ -53,5 +53,8 @@ export default function LangSwitcher({ variant = 'ghost', className = '' }) {
 
 LangSwitcher.propTypes = {
   variant: PropTypes.oneOf(['ghost', 'solid', 'minimal']),
-  className: PropTypes.string
+  className: PropTypes.string,
+  size: PropTypes.string,
+  padding: PropTypes.string,
+  btnClass: PropTypes.string
 };

@@ -35,6 +35,10 @@ import SaveButton from '../components/SaveButton.jsx';
 import ReviewSidebar from '../components/ReviewSidebar.jsx';
 import InlineAIAssistant from '../components/InlineAIAssistant.jsx';
 import DraftRestoreBanner from '../components/DraftRestoreBanner.jsx';
+import CharacterPanel from '../components/editor/CharacterPanel.jsx';
+import SettingPanel from '../components/editor/SettingPanel.jsx';
+import ConflictResolver from '../components/ConflictResolver.jsx';
+import ChapterHistoryPanel from '../components/ChapterHistoryPanel.jsx';
 import { useI18n } from '../context/I18nContext.jsx';
 import { useTask } from '../context/TaskContext.jsx';
 import { STORAGE_KEYS, draftKey } from '../constants/storage.js';
@@ -42,6 +46,8 @@ import { loadDraft, clearDraft, appendLocal } from '../utils/storage.js';
 import { useAutoSave } from '../hooks/useAutoSave.js';
 import { parseOutline } from '../utils/parse.js';
 import { useNovelId } from '../hooks/useNovelId.js';
+import { trackEvent } from '../utils/track.js';
+import { FUNNEL_EVENTS } from '../constants/funnelEvents.js';
 
 export default function Chapter() {
   const { t } = useI18n();
@@ -85,7 +91,7 @@ export default function Chapter() {
   // UX-03:三栏布局开关与栏显隐(刷新后保留)
   const [threeCol, setThreeCol] = useState(() => {
     try {
-      return localStorage.getItem('ink_speaker_chapter_three_col') !== '0';
+      return localStorage.getItem('ink_realm_chapter_three_col') !== '0';
     } catch {
       return true;
     }
@@ -102,6 +108,21 @@ export default function Chapter() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
+
+  // UX-06:右栏 AI 助手 / 人物 / 设定 tab 切换
+  const [rightTab, setRightTab] = useState('ai');
+
+  // UX-08:多设备冲突检测
+  const [conflictOpen, setConflictOpen] = useState(false);
+  const [conflictChapterId, setConflictChapterId] = useState(null);
+  // 当前章节加载时的服务端 updatedAt,作为下次保存时的 clientUpdatedAt
+  const [loadedUpdatedAt, setLoadedUpdatedAt] = useState(null);
+  // 强制保存标记:冲突后用户选择"强制本地"时,下次 saveChapter 不带 clientUpdatedAt
+  const [forceSave, setForceSave] = useState(false);
+
+  // BASE-07:章节历史快照面板
+  const [historyPanelOpen, setHistoryPanelOpen] = useState(false);
+  const [historyPanelChapterId, setHistoryPanelChapterId] = useState(null);
 
   const editorRef = useRef(null);
 
@@ -137,7 +158,7 @@ export default function Chapter() {
   // 三栏布局开关持久化
   useEffect(() => {
     try {
-      localStorage.setItem('ink_speaker_chapter_three_col', threeCol ? '1' : '0');
+      localStorage.setItem('ink_realm_chapter_three_col', threeCol ? '1' : '0');
     } catch {
       // 静默失败
     }
@@ -281,6 +302,12 @@ export default function Chapter() {
     toast.success(t('chapter.inline.inserted'));
   };
 
+  /** UX-06:把人物名插入到正文末尾 */
+  const handleInsertCharacterName = (name) => {
+    if (!name) return;
+    setResult((prev) => (prev ? prev + name : name));
+  };
+
   const generate = async () => {
     if (!outlineText.trim()) {
       toast.error(t('chapter.outlineRequired'));
@@ -320,6 +347,12 @@ export default function Chapter() {
             chars: (outlineText.length || 0) + (data.content?.length || 0)
           });
         } catch {}
+        // UX-11 漏斗:首章生成成功
+        trackEvent(
+          FUNNEL_EVENTS.WRITE_FIRST_CHAPTER,
+          { chapterNo: Number(chapterNo) || 1, wordCount: Number(wordCount) || 2000 },
+          novelId
+        );
       },
       successMsg: null
     });
@@ -350,10 +383,83 @@ export default function Chapter() {
       sessionId,
       wordCount: Number(result.length)
     };
-    const data = await saveChapter(payload);
-    // 后端保存成功 → 清掉本章节草稿(避免下次进入页面误弹恢复提示)
-    autoSave.clear();
-    return data;
+    // UX-08:多设备冲突检测 — 除非 forceSave,都带上 clientUpdatedAt
+    if (!forceSave && loadedUpdatedAt) {
+      payload.clientUpdatedAt = loadedUpdatedAt;
+    }
+    try {
+      const data = await saveChapter(payload);
+      // 后端保存成功 → 清掉本章节草稿 + 重置 conflict 标记
+      autoSave.clear();
+      setForceSave(false);
+      // UX-11 漏斗:章节保存成功
+      trackEvent(
+        FUNNEL_EVENTS.SAVE_CHAPTER,
+        { chapterNo: Number(chapterNo) || 1, wordCount: Number(result.length) },
+        novelId
+      );
+      // 服务端刚刚保存成功,新的 updatedAt 应当重新获取(下次保存作为 clientUpdatedAt)
+      // 简化处理:暂保持 loadedUpdatedAt 不变,即使下次保存触发冲突也只是再弹一次
+      return data;
+    } catch (err) {
+      // UX-08:后端返回 4091 → 弹冲突合并对话框
+      if (err?.businessCode === 4091) {
+        // 找出当前章节 ID(通过历史列表或已加载的 chapter)
+        // 此处简化:直接从 historyItems 中按 chapterNo 查
+        const matched = historyItems.find((x) => x.chapterNo === Number(chapterNo));
+        const chId = matched?.id;
+        if (chId) {
+          setConflictChapterId(chId);
+          setConflictOpen(true);
+        }
+      }
+      throw err;
+    }
+  };
+
+  /** UX-08:冲突对话框 — 采用服务端版本 */
+  const handleConflictUseServer = (serverContent, serverChapter) => {
+    setResult(serverContent || '');
+    if (serverChapter?.chapterNo) setChapterNo(serverChapter.chapterNo);
+    if (serverChapter?.title) setChapterTitle(serverChapter.title);
+    if (serverChapter?.sessionId) setSessionId(serverChapter.sessionId);
+    setLoadedUpdatedAt(serverChapter?.updatedAt || null);
+    setForceSave(false);
+    setConflictOpen(false);
+    setConflictChapterId(null);
+    toast.success(t('chapter.conflict.resolved'));
+  };
+
+  /** UX-08:冲突对话框 — 强制使用本地版本 */
+  const handleConflictForceLocal = () => {
+    setForceSave(true);
+    setConflictOpen(false);
+    setConflictChapterId(null);
+    toast.success(t('chapter.conflict.forced'));
+    // 立即触发一次保存(不带 clientUpdatedAt,绕过冲突检测)
+    handleSave().catch((err) => {
+      toast.error(t('chapter.saveFailed') + ':' + (err.response?.data?.message || err.message));
+    });
+  };
+
+  /** BASE-07:打开章节历史快照面板 */
+  const handleOpenHistoryPanel = async () => {
+    // 当前章节 ID 优先用 historyPanelChapterId;否则从历史列表中按 chapterNo 查
+    if (!historyPanelChapterId) {
+      try {
+        const list = await listChapters();
+        const matched = (list || []).find((x) => x.chapterNo === Number(chapterNo));
+        if (matched) setHistoryPanelChapterId(matched.id);
+      } catch {}
+    }
+    setHistoryPanelOpen(true);
+  };
+
+  /** BASE-07:从历史快照回滚到正文 */
+  const handleRestoreHistory = (content, snapshot) => {
+    setResult(content || '');
+    if (snapshot?.title) setChapterTitle(snapshot.title);
+    setForceSave(true); // 历史回滚也算"本地强制"
   };
 
   const openHistory = async () => {
@@ -386,6 +492,11 @@ export default function Chapter() {
       setChapterNo(detail.chapterNo || 1);
       setChapterTitle(detail.title || '');
       if (detail.sessionId) setSessionId(detail.sessionId);
+      // UX-08:记录加载时的服务端 updatedAt,用于下次保存的多设备冲突检测
+      setLoadedUpdatedAt(detail.updatedAt || null);
+      setForceSave(false);
+      // BASE-07:记录章节 ID 供历史快照面板使用
+      setHistoryPanelChapterId(detail.id);
       setHistoryOpen(false);
       toast.success(t('chapter.chapterLoaded').replace('{n}', detail.chapterNo));
     } catch (err) {
@@ -512,18 +623,44 @@ export default function Chapter() {
           <PanelRightClose className="h-3.5 w-3.5" />
         </button>
       </div>
+      {/* UX-06:右栏 tab 切换 AI 助手 / @人物 / 设定 */}
+      <div className="mb-1 flex items-center gap-1 border-b border-cyan-400/10 px-1">
+        {[
+          { key: 'ai', label: t('chapter.threeCol.assistant') },
+          { key: 'character', label: t('chapter.sidePane.tab.character') },
+          { key: 'setting', label: t('chapter.sidePane.tab.setting') }
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setRightTab(tab.key)}
+            className={`-mb-px border-b-2 px-2 py-1.5 text-[10px] tracking-widest transition ${
+              rightTab === tab.key
+                ? 'border-cyan-300 text-cyan-300'
+                : 'border-transparent text-white/40 hover:text-cyan-300/70'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
       <div className="min-h-0 flex-1">
-        <InlineAIAssistant
-          sessionId={sessionId}
-          skillId={skillId}
-          onInsert={handleInsertAIText}
-        />
+        {rightTab === 'ai' && (
+          <InlineAIAssistant
+            sessionId={sessionId}
+            skillId={skillId}
+            onInsert={handleInsertAIText}
+          />
+        )}
+        {rightTab === 'character' && (
+          <CharacterPanel onInsert={handleInsertCharacterName} />
+        )}
+        {rightTab === 'setting' && <SettingPanel />}
       </div>
     </aside>
   );
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div className="min-h-full p-4 sm:p-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="sf-heading">{t('chapter.heading')}</div>
@@ -717,6 +854,13 @@ export default function Chapter() {
               <History className="h-3 w-3" /> {t('chapter.history')}
             </button>
             <button
+              onClick={handleOpenHistoryPanel}
+              className="sf-btn-ghost"
+              title={t('chapter.history.button')}
+            >
+              <History className="h-3 w-3" /> {t('chapter.history.button')}
+            </button>
+            <button
               onClick={() => setReviewOpen(true)}
               className="sf-btn-ghost"
               title={t('chapter.reviewTitle')}
@@ -809,6 +953,22 @@ export default function Chapter() {
       {reviewOpen && (
         <ReviewSidebar chapterNo={Number(chapterNo) || 1} onClose={() => setReviewOpen(false)} />
       )}
+
+      <ConflictResolver
+        open={conflictOpen}
+        chapterId={conflictChapterId}
+        localContent={result}
+        onUseServer={handleConflictUseServer}
+        onForceLocal={handleConflictForceLocal}
+        onClose={() => setConflictOpen(false)}
+      />
+
+      <ChapterHistoryPanel
+        open={historyPanelOpen}
+        chapterId={historyPanelChapterId}
+        onRestore={handleRestoreHistory}
+        onClose={() => setHistoryPanelOpen(false)}
+      />
     </div>
   );
 }

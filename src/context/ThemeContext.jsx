@@ -3,8 +3,8 @@
  *
  * 主题列表:
  *   - scifi   科幻风(默认):深空黑 + 青蓝荧光 + HUD 网格
- *   - linear  Linear 风:近纯黑 + 靛紫 + 毛玻璃 + 微噪点(参考 linear.app)
- *   - stripe  Stripe 风:纯白底 + 靛蓝渐变 + 柔和阴影(参考 stripe.com)
+ *   - ink     水墨风:宣纸底 + 浓淡墨色 + 印泥红点缀(黑白水墨画)
+ *   - bubble  泡沫风:柔彩渐变 + 漂浮气泡 + 玻璃拟态(彩色泡沫)
  *
  * @author songshan.li (ID: 17099618)
  */
@@ -15,8 +15,8 @@ import { loadLocal, saveLocal } from '../utils/storage.js';
 /** 可用主题列表(顺序即 UI 展示顺序) */
 export const THEMES = [
   { id: 'scifi', labelZh: '科幻', labelEn: 'Sci-Fi', icon: 'sparkles' },
-  { id: 'linear', labelZh: 'Linear', labelEn: 'Linear', icon: 'layers' },
-  { id: 'stripe', labelZh: 'Stripe', labelEn: 'Stripe', icon: 'credit-card' },
+  { id: 'ink', labelZh: '水墨', labelEn: 'Ink', icon: 'brush' },
+  { id: 'bubble', labelZh: '泡沫', labelEn: 'Bubble', icon: 'droplets' },
 ];
 
 const DEFAULT_THEME = 'scifi';
@@ -57,8 +57,8 @@ export function ThemeProvider({ children }) {
     setTheme: changeTheme,
     cycle,
     isScifi: theme === 'scifi',
-    isLinear: theme === 'linear',
-    isStripe: theme === 'stripe',
+    isInk: theme === 'ink',
+    isBubble: theme === 'bubble',
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
@@ -66,7 +66,7 @@ export function ThemeProvider({ children }) {
 
 /**
  * 获取主题上下文。
- * @returns {{theme: string, themes: Array, setTheme: Function, cycle: Function, isScifi: boolean, isLinear: boolean, isStripe: boolean}}
+ * @returns {{theme: string, themes: Array, setTheme: Function, cycle: Function, isScifi: boolean, isInk: boolean, isBubble: boolean}}
  */
 export function useTheme() {
   const ctx = useContext(ThemeContext);

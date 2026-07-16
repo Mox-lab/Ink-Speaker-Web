@@ -1,0 +1,258 @@
+/**
+ * 主题三:彩色泡沫 (Bubble) —— 柔和多彩混合
+ * 粉彩系多色混合 + 漂浮气泡 + 玻璃拟态 —— 明快轻盈、协调不刺眼的彩虹泡沫意境
+ *
+ * 设计语言:玩趣、轻盈、通透、柔和
+ *   - 柔和多色混合(粉/蓝/紫/绿/黄/橙 低饱和粉彩),不再单一翠绿
+ *   - 华为新魏字体(英文 Arial),全站统一
+ *   - 大圆角(14-20px),玻璃拟态面板(强模糊 + 柔和多彩柔影)
+ *   - 柔和彩虹渐变实心按钮(流光动画),悬停轻微弹起
+ *   - 背景:粉彩系多色径向气泡 + 缓动漂浮动画,不刺眼
+ *
+ * @author songshan.li (ID: 17099618)
+ */
+
+/* ================ 变量定义 ================ */
+[data-theme="bubble"] {
+  color-scheme: light;
+
+  /* 基础色板(柔和粉彩多色混合) */
+  --sf-bg: #fdf8fb;
+  --sf-bg-2: #f6f2fb;
+  --sf-panel: rgba(255, 255, 255, 0.55);
+  --sf-panel-solid: rgba(255, 255, 255, 0.9);
+  --sf-border: rgba(255, 255, 255, 0.7);
+  --sf-border-strong: rgba(150, 140, 210, 0.45);
+  --sf-cyan: #8ab0e6;          /* 柔蓝(主强调) */
+  --sf-cyan-soft: #b8cdf2;
+  --sf-blue: #c9a8ee;          /* 柔紫 */
+  --sf-purple: #f0aacb;        /* 柔粉 */
+  --sf-green: #a8e2c4;          /* 柔绿 */
+  --sf-amber: #f6dca8;          /* 柔黄 */
+  --sf-text: #322c44;          /* 深灰紫字(更显眼) */
+  --sf-text-dim: #6b6480;
+
+  /* 主题感知别名 */
+  --sf-accent: #8ab0e6;        /* 主 = 柔蓝 */
+  --sf-accent-soft: #b8cdf2;
+  --sf-accent-2: #c9a8ee;      /* 次 = 柔紫 */
+  --sf-heading-color: #3c3060;
+
+  /* RGB 通道 */
+  --sf-accent-r: 138;
+  --sf-accent-g: 176;
+  --sf-accent-b: 230;
+  --sf-accent2-r: 201;
+  --sf-accent2-g: 168;
+  --sf-accent2-b: 238;
+  --sf-glow1-r: 138;
+  --sf-glow1-g: 176;
+  --sf-glow1-b: 230;
+  --sf-glow2-r: 201;
+  --sf-glow2-g: 168;
+  --sf-glow2-b: 238;
+  --sf-grid-r: 138;
+  --sf-grid-g: 176;
+  --sf-grid-b: 230;
+  --sf-scan-r: 138;
+  --sf-scan-g: 176;
+  --sf-scan-b: 230;
+
+  /* 输入框 */
+  --sf-input-bg: rgba(255, 255, 255, 0.6);
+  --sf-input-bg-focus: rgba(255, 255, 255, 0.85);
+
+  /* 装饰效果:关闭网格与扫描线 */
+  --sf-grid-opacity: 0;
+  --sf-scan-opacity: 0;
+
+  /* 字体:英文 Arial,中文华为新魏(全站统一) */
+  --sf-font-base: "Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif;
+  --sf-font-title: "Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif;
+}
+
+/* ================ 关键帧:气泡漂浮 ================ */
+@keyframes sf-bubble-float {
+  0%   { transform: translate(0, 0); }
+  50%  { transform: translate(10px, -20px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ================ 关键帧:彩虹按钮流光 ================ */
+@keyframes sf-bubble-btn-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ================ 背景效果:粉彩系多色气泡(底层) ================ */
+[data-theme="bubble"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(240, 170, 203, 0.28), transparent 22%),
+    radial-gradient(circle at 82% 25%, rgba(165, 200, 246, 0.26), transparent 24%),
+    radial-gradient(circle at 68% 80%, rgba(168, 226, 196, 0.24), transparent 26%),
+    radial-gradient(circle at 25% 78%, rgba(201, 168, 238, 0.26), transparent 22%),
+    radial-gradient(circle at 50% 50%, rgba(246, 220, 168, 0.20), transparent 28%),
+    radial-gradient(circle at 92% 86%, rgba(246, 200, 165, 0.24), transparent 20%);
+  background-attachment: fixed;
+}
+
+/* ================ 背景效果:白色高光气泡(漂浮层) ================ */
+[data-theme="bubble"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.55), transparent 12%),
+    radial-gradient(circle at 22% 60%, rgba(255, 255, 255, 0.45), transparent 10%),
+    radial-gradient(circle at 85% 65%, rgba(255, 255, 255, 0.5), transparent 11%);
+  background-attachment: fixed;
+  animation: sf-bubble-float 14s ease-in-out infinite;
+}
+
+/* ================ 面板:玻璃拟态 + 柔和多彩柔影 ================ */
+[data-theme="bubble"] .sf-panel,
+[data-theme="bubble"] .sf-panel-hud {
+  border-radius: 20px;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(165, 200, 246, 0.14),
+    0 2px 8px rgba(201, 168, 238, 0.12),
+    0 0 24px rgba(240, 170, 203, 0.10);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+}
+
+/* HUD 角标:柔紫圆角描边 */
+[data-theme="bubble"] .sf-panel-hud::before,
+[data-theme="bubble"] .sf-panel-hud::after {
+  border-color: rgba(150, 140, 210, 0.4);
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  opacity: 0.7;
+}
+
+/* 面板内高光 */
+[data-theme="bubble"] .sf-panel::before {
+  background: radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, 0.4), transparent 60%);
+}
+
+/* ================ 输入框:聚焦柔和 glow ================ */
+[data-theme="bubble"] .sf-input {
+  border-radius: 14px;
+}
+[data-theme="bubble"] .sf-input:focus {
+  border-color: var(--sf-accent);
+  box-shadow: 0 0 0 3px rgba(138, 176, 230, 0.18), 0 4px 14px rgba(201, 168, 238, 0.14);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* ================ 主按钮:柔和彩虹渐变 + 流光 + 悬停弹起 ================ */
+[data-theme="bubble"] .sf-btn {
+  background: linear-gradient(135deg, #f0aacb, #c9a8ee, #8ab0e6, #a8e2c4, #f6dca8);
+  background-size: 300% 300%;
+  animation: sf-bubble-btn-shift 8s ease infinite;
+  border: none;
+  color: #ffffff;
+  border-radius: 14px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(150, 140, 210, 0.28);
+}
+[data-theme="bubble"] .sf-btn::before {
+  display: none;
+}
+[data-theme="bubble"] .sf-btn:hover {
+  color: #ffffff;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(150, 140, 210, 0.36);
+}
+
+/* ================ 次级按钮 ================ */
+[data-theme="bubble"] .sf-btn-ghost {
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: var(--sf-text-dim);
+  background: rgba(255, 255, 255, 0.35);
+}
+[data-theme="bubble"] .sf-btn-ghost:hover {
+  border-color: var(--sf-accent);
+  color: var(--sf-accent);
+  background: rgba(138, 176, 230, 0.12);
+}
+
+/* ================ 标签:柔彩胶囊 ================ */
+[data-theme="bubble"] .sf-chip {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, rgba(240, 170, 203, 0.16), rgba(165, 200, 246, 0.16));
+  border-color: rgba(150, 140, 210, 0.35);
+  color: #5f3f7a;
+}
+
+/* ================ 标题:柔彩竖条 + 柔和辉光 ================ */
+[data-theme="bubble"] .sf-heading {
+  letter-spacing: 0.02em;
+}
+[data-theme="bubble"] .sf-heading::before {
+  width: 8px;
+  height: 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f0aacb, #c9a8ee, #8ab0e6);
+  box-shadow: 0 0 12px rgba(150, 140, 210, 0.5);
+}
+
+/* ================ 状态点:柔绿 ================ */
+[data-theme="bubble"] .sf-dot {
+  background: var(--sf-green);
+  box-shadow: 0 0 8px rgba(168, 226, 196, 0.5);
+}
+
+/* ================ 大标题:圆体 + 柔和辉光 ================ */
+[data-theme="bubble"] .sf-ink-title {
+  font-family: var(--sf-font-base);
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 16px rgba(150, 140, 210, 0.3);
+  -webkit-text-stroke: 0;
+  filter: none;
+}
+
+/* ================ HUD 角标:柔紫圆角 ================ */
+[data-theme="bubble"] .sf-corners::before,
+[data-theme="bubble"] .sf-corners::after {
+  border-color: rgba(150, 140, 210, 0.4);
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+/* ================ 品牌面板:柔彩渐变,无网格 ================ */
+[data-theme="bubble"] .sf-login-brand {
+  background: linear-gradient(135deg, rgba(240, 170, 203, 0.22), rgba(165, 200, 246, 0.22), rgba(168, 226, 196, 0.22));
+}
+[data-theme="bubble"] .sf-login-brand::before {
+  display: none;
+}
+[data-theme="bubble"] .sf-brand-beam {
+  background: linear-gradient(180deg, transparent, rgba(150, 140, 210, 0.4), transparent);
+}
+
+/* ================ 扫描/闪烁:禁用 ================ */
+[data-theme="bubble"] .sf-scan::after {
+  display: none;
+}
+[data-theme="bubble"] .sf-flicker {
+  animation: none;
+  opacity: 0.3;
+}

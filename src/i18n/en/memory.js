@@ -13,4 +13,8 @@ export const memory = {
   'usage.title': 'TOKEN Usage',
   'usage.budget': 'Budget {used}/{total}',
   'usage.dataSource': 'Source: local accumulation (Prometheus coming)',
+  'usage.monthLabel': 'This month',
+  'usage.expand': 'Expand',
+  'usage.collapse': 'Collapse',
+  'usage.lastAt': 'Last call',
 };

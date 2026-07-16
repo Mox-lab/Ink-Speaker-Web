@@ -29,4 +29,20 @@ export const nav = {
   'nav.back': 'Back',
   'nav.backToNovels': 'Back to novels',
   'nav.breadcrumb': 'Breadcrumb',
+
+  // Two-level menu groups (#54/#55)
+  'nav.group.chat': 'Chat',
+  'nav.group.creation': 'Creation',
+  'nav.chat.single': 'Single Chat',
+  'nav.sidebar.collapse': 'Collapse Sidebar',
+  'nav.sidebar.expand': 'Expand Sidebar',
+
+  // Admin console (#58)
+  'nav.admin': 'Admin',
+  'nav.admin.novels': 'All Novels',
+  'nav.admin.users': 'Users',
+
+  // Profile center (planned)
+  'nav.profile': 'Profile',
+  'nav.profileSoon': 'Profile center is coming soon',
 };

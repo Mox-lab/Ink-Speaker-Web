@@ -32,7 +32,7 @@ const SEG_LABEL_KEY = {
   lore: 'novel.breadcrumb.lore'
 };
 
-const NOVEL_TITLE_CACHE = 'ink_speaker_novel_title_cache';
+const NOVEL_TITLE_CACHE = 'ink_realm_novel_title_cache';
 
 const readCachedTitle = (novelId) => {
   if (!novelId) return '';

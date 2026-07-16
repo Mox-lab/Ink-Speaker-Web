@@ -45,7 +45,7 @@ function formatRelative(ts, locale) {
   return locale === 'en' ? `${n}d ago` : `${n} 天前`;
 }
 
-export default function NotificationBell() {
+export default function NotificationBell({ size = 'h-3.5 w-3.5', btnClass = 'sf-btn-ghost', padding = '!px-2 !py-1' }) {
   const { t, lang } = useI18n();
   const { notifications, unreadCount, markRead, markAllRead, remove, clearAll } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -74,11 +74,11 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={handleToggle}
-        className="relative rounded border border-cyan-400/20 px-2 py-1.5 text-cyan-300/80 transition hover:bg-cyan-400/10 hover:text-cyan-300"
+        className={`${btnClass} relative ${padding}`}
         aria-label={t('notify.title')}
         title={t('notify.title')}
       >
-        <Bell className="h-4 w-4" />
+        <Bell className={size} />
         {unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 flex min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -87,7 +87,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-[340px] max-w-[90vw] overflow-hidden rounded border border-cyan-400/20 bg-black/90 shadow-2xl backdrop-blur-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[340px] max-w-[90vw] overflow-hidden rounded border border-[var(--sf-border)] bg-[var(--sf-panel-solid)] text-[var(--sf-text)] shadow-2xl backdrop-blur-xl">
           {/* 顶部 */}
           <div className="flex items-center justify-between border-b border-cyan-400/10 px-3 py-2">
             <div className="flex items-center gap-2 text-[11px] tracking-widest text-cyan-300/70">
@@ -115,13 +115,6 @@ export default function NotificationBell() {
                 className="rounded p-1 text-white/40 transition hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => setOpen(false)}
-                title={t('common.cancel')}
-                className="rounded p-1 text-white/40 transition hover:bg-white/5 hover:text-white"
-              >
-                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

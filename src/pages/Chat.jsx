@@ -39,8 +39,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex sf-h-screen-dynamic flex-col">
-      <header className="border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
+    <div className="flex h-full min-h-0 flex-col">
+      <header className="border-b border-cyan-400/10 px-4 py-6 sm:px-8 sm:py-8">
         <div className="sf-heading">{t('chat.heading')}</div>
         <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
           {t('chat.subheading')}
@@ -89,26 +89,26 @@ export default function Chat() {
       </div>
 
       <div className="border-t border-cyan-400/10 px-4 py-3 sm:px-8 sm:py-4">
-        <div className="mx-auto flex max-w-3xl items-end gap-2">
-          <div className="flex-1">
-            <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">{t('chat.message')}</div>
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-1 text-[10px] tracking-widest text-cyan-300/60">{t('chat.message')}</div>
+          <div className="flex items-stretch gap-2">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={onKeyDown}
               rows={2}
               placeholder={t('chat.placeholder')}
-              className="sf-input w-full resize-none"
+              className="sf-input w-full resize-none flex-1"
             />
+            <button
+              onClick={send}
+              disabled={loading || !message.trim()}
+              className="sf-btn flex-shrink-0 px-4"
+              title={t('common.send')}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </button>
           </div>
-          <button
-            onClick={send}
-            disabled={loading || !message.trim()}
-            className="sf-btn h-[56px] px-4 sm:h-[64px]"
-            title={t('common.send')}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </button>
         </div>
         {loading && <div className="sf-loader-bar mx-auto mt-3 max-w-3xl" />}
       </div>

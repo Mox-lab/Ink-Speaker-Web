@@ -29,4 +29,20 @@ export const nav = {
   'nav.back': '返回',
   'nav.backToNovels': '返回小说列表',
   'nav.breadcrumb': '面包屑导航',
+
+  // 两级菜单分组(#54/#55)
+  'nav.group.chat': '对话',
+  'nav.group.creation': '创作',
+  'nav.chat.single': '单轮对话',
+  'nav.sidebar.collapse': '收起侧栏',
+  'nav.sidebar.expand': '展开侧栏',
+
+  // 管理后台(#58)
+  'nav.admin': '管理后台',
+  'nav.admin.novels': '全平台小说',
+  'nav.admin.users': '用户管理',
+
+  // 个人中心(规划中)
+  'nav.profile': '个人中心',
+  'nav.profileSoon': '个人中心规划中，敬请期待',
 };

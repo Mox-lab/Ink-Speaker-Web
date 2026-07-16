@@ -69,7 +69,7 @@ export default function NovelTemplatePicker({ onPick }) {
                 className="mb-2 text-base font-bold leading-tight text-white"
                 style={{
                   fontFamily:
-                    '"STXingkai", "华文行楷", "Xingkai SC", "楷体", "KaiTi", "STKaiti", cursive'
+                    '"Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif'
                 }}
               >
                 {t(`novel.template.${tpl.id}.title`)}

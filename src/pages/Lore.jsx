@@ -156,7 +156,7 @@ export default function Lore() {
   };
 
   return (
-    <div className="flex sf-h-screen-dynamic flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <header className="border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
         <div className="sf-heading">{t('lore.heading')}</div>
         <p className="mt-2 pl-4 text-[12px] tracking-wide text-cyan-300/50">
@@ -396,7 +396,7 @@ export default function Lore() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <MemoryPanel />
-                <UsagePanel />
+                <UsagePanel variant="inline" />
               </div>
               <div className="sf-panel-hud p-4">
                 <label className="mb-2 block text-[10px] tracking-widest text-cyan-300/60">{t('lore.architectureTitle')}</label>

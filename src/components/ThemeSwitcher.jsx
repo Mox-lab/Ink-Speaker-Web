@@ -9,7 +9,7 @@
  * @author songshan.li (ID: 17099618)
  */
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Layers, CreditCard, ChevronDown, Check } from 'lucide-react';
+import { Sparkles, Brush, Droplets, ChevronDown, Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useI18n } from '../context/I18nContext.jsx';
 import PropTypes from 'prop-types';
@@ -17,13 +17,13 @@ import PropTypes from 'prop-types';
 /** 主题图标映射 */
 const THEME_ICONS = {
   sparkles: Sparkles,
-  layers: Layers,
-  'credit-card': CreditCard,
+  brush: Brush,
+  droplets: Droplets,
 };
 
-export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) {
+export default function ThemeSwitcher({ variant = 'dropdown', className = '', size = 'h-3.5 w-3.5', padding = '!px-1.5 !py-1', btnClass = 'sf-btn-ghost' }) {
   const { theme, themes, setTheme } = useTheme();
-  const { isZh, t } = useI18n();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -42,25 +42,18 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) 
   const currentTheme = themes.find((t) => t.id === theme) || themes[0];
   const CurrentIcon = THEME_ICONS[currentTheme.icon] || Sparkles;
 
-  /* ===== minimal:仅图标按钮,点击循环切换 ===== */
+  /* ===== minimal:纯图标按钮,展示下一个主题的图标,点击循环切换 ===== */
   if (variant === 'minimal') {
+    const idx = themes.findIndex((item) => item.id === theme);
+    const nextTheme = themes[(idx + 1) % themes.length];
+    const NextIcon = THEME_ICONS[nextTheme.icon] || Sparkles;
     return (
       <button
-        onClick={() => {
-          const idx = themes.findIndex((t) => t.id === theme);
-          const next = themes[(idx + 1) % themes.length];
-          setTheme(next.id);
-        }}
-        className={`flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px] tracking-widest transition ${className}`}
-        style={{
-          borderColor: 'var(--sf-border)',
-          color: 'var(--sf-accent)',
-          background: 'rgba(var(--sf-accent-r), var(--sf-accent-g), var(--sf-accent-b), 0.06)',
-        }}
-        title={t('theme.switch')}
+        onClick={() => setTheme(nextTheme.id)}
+        className={`${btnClass} ${padding} transition ${className}`}
+        title={t(`theme.${nextTheme.id}`)}
       >
-        <CurrentIcon className="h-3 w-3" />
-        {isZh ? currentTheme.labelZh : currentTheme.labelEn}
+        <NextIcon className={size} />
       </button>
     );
   }
@@ -88,7 +81,7 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) 
               }}
             >
               <Icon className="h-3 w-3" />
-              {isZh ? item.labelZh : item.labelEn}
+              {t(`theme.${item.id}`)}
             </button>
           );
         })}
@@ -110,7 +103,7 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) 
         title={t('theme.switch')}
       >
         <CurrentIcon className="h-3 w-3" />
-        <span>{isZh ? currentTheme.labelZh : currentTheme.labelEn}</span>
+        <span>{t(`theme.${currentTheme.id}`)}</span>
         <ChevronDown className={`h-3 w-3 transition ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -144,7 +137,7 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) 
                 }}
               >
                 <Icon className="h-3.5 w-3.5" />
-                <span className="flex-1">{isZh ? item.labelZh : item.labelEn}</span>
+                <span className="flex-1">{t(`theme.${item.id}`)}</span>
                 {active && <Check className="h-3 w-3" />}
               </button>
             );
@@ -158,4 +151,7 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '' }) 
 ThemeSwitcher.propTypes = {
   variant: PropTypes.oneOf(['dropdown', 'minimal', 'inline']),
   className: PropTypes.string,
+  size: PropTypes.string,
+  padding: PropTypes.string,
+  btnClass: PropTypes.string,
 };

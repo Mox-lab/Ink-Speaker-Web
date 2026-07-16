@@ -70,9 +70,9 @@
   --sf-scan-opacity: 0.012;
   --sf-scan-size: 4px;
 
-  /* 字体 */
-  --sf-font-base: "JetBrains Mono", ui-monospace, "SFMono-Regular", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --sf-font-title: "STXingkai", "华文行楷", "Xingkai SC", "楷体", "KaiTi", "STKaiti", cursive;
+  /* 字体:华为新魏(全站统一) */
+  --sf-font-base: "Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif;
+  --sf-font-title: "Arial", "STXinwei", "华文新魏", "XinWei", "华为新魏", "KaiTi", "STKaiti", sans-serif;
 }
 
 /* ================ 背景效果:HUD 网格 ================ */

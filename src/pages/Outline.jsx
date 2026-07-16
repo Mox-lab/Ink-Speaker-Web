@@ -22,6 +22,8 @@ import { loadDraft, saveDraft, clearDraft } from '../utils/storage.js';
 import { useAutoSave } from '../hooks/useAutoSave.js';
 import { parseOutline } from '../utils/parse.js';
 import { useNovelId } from '../hooks/useNovelId.js';
+import { trackEvent } from '../utils/track.js';
+import { FUNNEL_EVENTS } from '../constants/funnelEvents.js';
 
 /**
  * 模块级 Promise 缓存:让生成任务跨组件卸载/重新挂载存活。
@@ -285,6 +287,12 @@ export default function Outline() {
           setRawResult(newContent);
           toast.success(t('outline.generated').replace('{n}', chapters));
         }
+        // UX-11 漏斗:大纲生成成功
+        trackEvent(
+          FUNNEL_EVENTS.GENERATE_OUTLINE,
+          { theme: theme.trim(), chapters: Number(chapters) || 20, continueMode },
+          novelId
+        );
       },
       successMsg: null
     });
@@ -410,7 +418,7 @@ export default function Outline() {
   const hasContent = !!rawResult && !loading;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div className="min-h-full p-4 sm:p-8">
       {/* 顶部标题区 */}
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>

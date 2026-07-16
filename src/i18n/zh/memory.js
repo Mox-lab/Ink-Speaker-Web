@@ -13,4 +13,8 @@ export const memory = {
   'usage.title': 'TOKEN 用量',
   'usage.budget': '预算 {used}/{total}',
   'usage.dataSource': '数据来源:本地累计(后续接入 Prometheus)',
+  'usage.monthLabel': '本月',
+  'usage.expand': '展开',
+  'usage.collapse': '收起',
+  'usage.lastAt': '最近调用',
 };

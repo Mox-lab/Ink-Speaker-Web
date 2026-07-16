@@ -98,10 +98,13 @@ api.interceptors.response.use(
       }
       // 业务失败
       const msg = body.message || '业务异常';
-      if (body.code >= 5000) {
-        toast.error(`服务异常:${msg}`);
-      } else {
-        toast.error(msg);
+      // 请求可通过 config.skipErrorToast=true 关闭全局弹窗,改由调用方自行内联展示错误
+      if (!resp.config?.skipErrorToast) {
+        if (body.code >= 5000) {
+          toast.error(`服务异常:${msg}`);
+        } else {
+          toast.error(msg);
+        }
       }
       // 业务码 2001(未鉴权):token 失效或被后端拒绝,清除并跳登录
       if (body.code === 2001) {
@@ -126,8 +129,11 @@ api.interceptors.response.use(
     if (status !== 401 || original._retry || original.url.includes('/auth/')) {
       // 友好提示:HTTP 4xx/5xx 时尝试从 Result.message 或 error.message 取
       const msg = error.response?.data?.message || error.response?.data?.error || error.message;
-      if (status >= 500) toast.error(`服务异常:${msg}`);
-      else if (status >= 400 && status !== 401) toast.error(`请求失败 (${status}):${msg}`);
+      // 同样尊重 skipErrorToast:登录/注册等页面可关闭全局弹窗,自行内联展示
+      if (!original?.skipErrorToast) {
+        if (status >= 500) toast.error(`服务异常:${msg}`);
+        else if (status >= 400 && status !== 401) toast.error(`请求失败 (${status}):${msg}`);
+      }
       throw error;
     }
 

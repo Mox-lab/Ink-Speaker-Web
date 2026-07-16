@@ -6,8 +6,8 @@
  *   base.css         — 全局 reset / body / 滚动条 / keyframes
  *   components.css   — 组件结构基类(使用 CSS 变量,主题无关)
  *   theme-scifi.css  — 科幻风:变量 + HUD/霓虹/扫描线 UI
- *   theme-linear.css — Linear风:变量 + 毛玻璃/噪点/平滑 UI
- *   theme-stripe.css — Stripe风:变量 + 渐变/柔和阴影/干净 UI
+ *   theme-ink.css    — 水墨风:变量 + 宣纸/墨晕/印泥红 UI
+ *   theme-bubble.css — 彩色泡沫风:变量 + 漂浮气泡/玻璃拟态 UI
  *
  * @author songshan.li (ID: 17099618)
  */
@@ -16,8 +16,8 @@
 @import "./base.css";
 @import "./components.css";
 @import "./theme-scifi.css";
-@import "./theme-linear.css";
-@import "./theme-stripe.css";
+@import "./theme-ink.css";
+@import "./theme-bubble.css";
 
 /* ================================================================
  * Tailwind 颜色令牌 → CSS 变量映射
