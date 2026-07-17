@@ -65,7 +65,7 @@ function clearPendingOutline() {
 function FlowNode({ node, active, onClick, onJumpToChapter }) {
   return (
     <div
-      className={`sf-scan relative flex w-64 shrink-0 cursor-pointer flex-col rounded border p-4 transition sm:w-72 ${
+      className={`sf-scan relative flex w-[80vw] shrink-0 cursor-pointer flex-col rounded border p-4 transition sm:w-64 md:w-72 ${
         active
           ? 'border-cyan-300 bg-cyan-400/[0.08] shadow-[0_0_24px_rgba(56,230,255,0.25)]'
           : 'border-cyan-400/15 bg-black/40 hover:border-cyan-300/50 hover:bg-cyan-400/[0.04]'

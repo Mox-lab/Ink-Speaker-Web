@@ -528,7 +528,7 @@ export default function NovelOverview() {
             </div>
 
             {/* 信息区:左=基础信息三行(标题/作者/简介);右=操作按钮,整体下沉贴 header 底线 */}
-            <div className="mt-2 flex items-end justify-between gap-4">
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               {/* 左:基础信息(标题 + 改名 + 公开/私有 + 作者/时间 + 简介) */}
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 {/* 标题行:小说名(可内联改名) */}
@@ -627,7 +627,7 @@ export default function NovelOverview() {
               </div>
 
               {/* 右:操作按钮(继续写作 + 导出),下沉贴 header 底线 */}
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 pb-1">
+              <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 pb-1 sm:w-auto">
                 <button
                   onClick={handleContinueWriting}
                   className="flex items-center gap-2 rounded border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-300 transition hover:bg-cyan-400/20"
@@ -648,7 +648,7 @@ export default function NovelOverview() {
                     <ChevronDown className="h-3 w-3 opacity-60" />
                   </button>
                   {exportOpen && (
-                    <div className="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded border border-cyan-400/30 bg-black/95 py-1 shadow-2xl backdrop-blur">
+                    <div className="absolute right-0 z-20 mt-1 w-52 max-w-[calc(100vw-2rem)] overflow-hidden rounded border border-cyan-400/30 bg-black/95 py-1 shadow-2xl backdrop-blur">
                       {[
                         { fmt: 'md', icon: FileText, label: t('novel.export.menu.md') },
                         { fmt: 'txt', icon: FileType2, label: t('novel.export.menu.txt') },

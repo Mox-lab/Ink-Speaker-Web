@@ -228,7 +228,7 @@ export default function NovelEditor({ mode = 'create' }) {
       <div className="flex-1 px-4 py-6 sm:px-8 sm:py-8">
         <form
           onSubmit={handleSubmit}
-          className="mx-auto max-w-2xl space-y-5 rounded border border-cyan-400/15 bg-black/40 p-6"
+          className="mx-auto max-w-2xl space-y-5 rounded border border-cyan-400/15 bg-black/40 p-4 sm:p-6"
         >
           {/* 标题 */}
           <div>
@@ -287,19 +287,19 @@ export default function NovelEditor({ mode = 'create' }) {
           </label>
 
           {/* 操作 */}
-          <div className="flex items-center justify-end gap-3 border-t border-cyan-400/10 pt-4">
+          <div className="flex flex-col-reverse gap-3 border-t border-cyan-400/10 pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleBack}
               disabled={submitting}
-              className="rounded border border-white/20 px-4 py-2 text-sm text-white/60 transition hover:bg-white/5"
+              className="w-full rounded border border-white/20 px-4 py-2 text-sm text-white/60 transition hover:bg-white/5 sm:w-auto"
             >
               {t('nav.back')}
             </button>
             <button
               type="submit"
               disabled={submitting || isTitleDuplicate}
-              className="flex items-center gap-2 rounded border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded border border-cyan-400/40 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-300 transition hover:bg-cyan-400/20 disabled:opacity-50 sm:w-auto"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

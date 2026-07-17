@@ -96,8 +96,11 @@ export default function Chapter() {
       return true;
     }
   });
-  const [showOutlinePane, setShowOutlinePane] = useState(true);
-  const [showAIPane, setShowAIPane] = useState(true);
+  // 手机端(<1024px)默认折叠左右栏,编辑器优先可见;桌面端默认展开
+  const isDesktopInit =
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+  const [showOutlinePane, setShowOutlinePane] = useState(isDesktopInit);
+  const [showAIPane, setShowAIPane] = useState(isDesktopInit);
 
   // 左栏:激活大纲节点列表(用于点击预填到正文大纲)
   const [outlineNodes, setOutlineNodes] = useState([]);
@@ -519,7 +522,7 @@ export default function Chapter() {
   // 三栏布局:左栏大纲节点 / 中栏正文 / 右栏 AI 助手
   // 小屏(< lg)自动退化为单栏,通过 toggle 在三栏和经典模式间切换
   const renderOutlinePane = () => (
-    <aside className="flex w-full min-h-0 flex-col rounded border border-cyan-400/15 bg-black/40 lg:w-72">
+    <aside className="flex w-full min-h-0 flex-col overflow-hidden rounded border border-cyan-400/15 bg-black/40 lg:w-72 lg:overflow-visible max-h-[45vh] lg:max-h-none">
       <div className="flex items-center justify-between border-b border-cyan-400/10 px-3 py-2">
         <div className="flex items-center gap-2 text-xs tracking-widest text-cyan-300/60">
           <BookOpen className="h-3.5 w-3.5" />
@@ -613,7 +616,7 @@ export default function Chapter() {
   );
 
   const renderAIPane = () => (
-    <aside className="flex w-full min-h-0 flex-col lg:w-80">
+    <aside className="flex w-full min-h-0 flex-col overflow-y-auto rounded border border-cyan-400/15 bg-black/40 lg:w-80 lg:overflow-visible max-h-[60vh] lg:max-h-none">
       <div className="mb-1 flex items-center justify-end px-1 lg:hidden">
         <button
           onClick={() => setShowAIPane(false)}

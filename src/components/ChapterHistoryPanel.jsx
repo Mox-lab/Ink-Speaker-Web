@@ -71,9 +71,9 @@ export default function ChapterHistoryPanel({ open, chapterId, onRestore, onClos
           </button>
         </div>
 
-        <div className="flex min-h-0 flex-1">
-          {/* 左:快照列表 */}
-          <div className="w-56 shrink-0 overflow-y-auto border-r border-cyan-400/10">
+        <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
+          {/* 左:快照列表(手机端整宽置顶,避免 224px 挤压正文) */}
+          <div className="w-full shrink-0 overflow-y-auto border-b border-cyan-400/10 sm:w-56 sm:border-b-0 sm:border-r">
             {loading ? (
               <div className="flex items-center justify-center py-8 text-cyan-300/60">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

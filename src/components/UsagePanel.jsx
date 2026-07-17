@@ -160,7 +160,7 @@ export default function UsagePanel({ variant = 'floating' }) {
 
   // floating 变体:/novels 右下角浮动卡片
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-64 rounded border border-cyan-400/20 bg-black/70 backdrop-blur-md shadow-lg">
+    <div className="fixed z-40 w-[calc(100vw-1rem)] max-w-[16rem] bottom-[5rem] right-2 rounded border border-cyan-400/20 bg-black/70 backdrop-blur-md shadow-lg sm:bottom-4 sm:right-4 sm:w-64">
       <div className="flex items-center justify-between border-b border-cyan-400/10 px-3 py-2">
         <div className="flex items-center gap-2">
           <Activity className="h-3.5 w-3.5 text-cyan-300" />

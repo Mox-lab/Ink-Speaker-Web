@@ -307,7 +307,7 @@ export default function Lore() {
                   <span className="sf-chip">NEW</span>
                   <span className="text-2xs tracking-widest text-white/30">{t('lore.archiveHint')}</span>
                 </div>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-[160px_140px_1fr_auto] sm:gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[160px_140px_1fr_auto] sm:gap-2">
                   <input
                     value={archiveDraft.keyword}
                     onChange={(e) => setArchiveDraft((s) => ({ ...s, keyword: e.target.value }))}

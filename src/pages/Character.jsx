@@ -64,7 +64,7 @@ function RelationGraph({ characters, t }) {
     <div className="sf-scroll-x relative w-full overflow-x-auto rounded border border-cyan-400/15 bg-black/40">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="block min-w-[600px] w-full sm:min-w-0"
+        className="block min-w-[88vw] w-full sm:min-w-0"
         style={{
           background: 'radial-gradient(ellipse at center, rgba(56,230,255,0.04), transparent 70%)'
         }}

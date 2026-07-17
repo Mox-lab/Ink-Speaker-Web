@@ -109,7 +109,7 @@ export default function ThemeSwitcher({ variant = 'dropdown', className = '', si
 
       {open && (
         <div
-          className="sf-panel absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded p-1"
+          className="sf-panel absolute right-0 top-full z-50 mt-1 min-w-[140px] max-w-[calc(100vw-2rem)] rounded p-1"
           style={{ borderColor: 'var(--sf-border)' }}
         >
           {themes.map((item) => {

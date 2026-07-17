@@ -55,14 +55,14 @@ export default function Writing() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
+      <header className="shrink-0 border-b border-cyan-400/10 px-4 py-4 sm:px-8 sm:py-5">
         <div className="sf-heading">{t('writing.heading')}</div>
         <p className="mt-2 pl-4 text-xs tracking-wide text-cyan-300/50">
           {t('writing.subheading')}
         </p>
       </header>
 
-      <div className="border-b border-cyan-400/10 px-4 py-3 sm:px-8">
+      <div className="shrink-0 border-b border-cyan-400/10 px-4 py-3 sm:px-8">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-xs tracking-wide text-cyan-300/60">
             {t('writing.session')}
@@ -93,7 +93,7 @@ export default function Writing() {
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto px-4 py-4 sm:px-8 sm:py-6">
         {history.length === 0 && (
           <div className="flex h-full items-center justify-center text-white/20">
             <div className="text-center">
@@ -133,7 +133,7 @@ export default function Writing() {
         </div>
       </div>
 
-      <div className="border-t border-cyan-400/10 px-4 py-3 sm:px-8 sm:py-4">
+      <div className="shrink-0 border-t border-cyan-400/10 px-4 py-3 sm:px-8 sm:py-4">
         <div className="mx-auto max-w-3xl">
           <div className="mb-1 text-2xs tracking-widest text-cyan-300/60">{t('chat.message')}</div>
           <div className="flex items-stretch gap-2">

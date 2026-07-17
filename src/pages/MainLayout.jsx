@@ -138,21 +138,8 @@ export default function MainLayout() {
     }
   ];
 
-  // 移动端底部 Tab:精选主模块,等宽均分填满屏幕(上下文感知)
-  // - 未进入小说工作台:对话 / 小说(2 项各半)
-  // - 进入小说工作台:对话 / 总览 / 写作 / 大纲 / 人物(精选核心 5 项,避免溢出)
-  const bottomTabs = inWorkspace
-    ? [
-        { to: '/chat', label: t('nav.chat.single'), short: t('nav.chat.singleShort'), icon: MessageSquare },
-        { to: creationBase, label: t('nav.overview'), short: t('nav.overview'), icon: LayoutGrid },
-        { to: `${creationBase}/writing`, label: t('nav.writing'), icon: PenLine },
-        { to: `${creationBase}/outline`, label: t('nav.outline'), icon: ListTree },
-        { to: `${creationBase}/character`, label: t('nav.character'), icon: UserCircle2 }
-      ]
-    : [
-        { to: '/chat', label: t('nav.chat.single'), short: t('nav.chat.singleShort'), icon: MessageSquare },
-        { to: '/novels', label: t('nav.novels'), short: t('nav.novelsShort'), icon: PenLine }
-      ];
+  // 移动端底部导航直接复用左侧菜单栏 navGroups(见下方 <nav> 渲染),
+  // 保证"项与顺序与左侧菜单栏完全一致",不再单独维护 bottomTabs 子集。
 
   const toggleSidebar = () => setOpen((prev) => !prev);
 
@@ -183,6 +170,9 @@ export default function MainLayout() {
         to={item.to}
         onClick={closeDrawer}
         title={isCollapsed ? item.label : undefined}
+        // end:精确匹配,避免父路由(如总览 /novels/:id)被其所有子路由前缀匹配
+        // 导致"总览一直被选中"而当前子页项反而无法高亮
+        end
         className={({ isActive }) =>
           `group relative mb-1 flex items-center rounded transition ${
             isCollapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2.5 text-base'
@@ -441,31 +431,49 @@ export default function MainLayout() {
           </div>
         </header>
 
-        {/* 移动端底部 Tab 栏:精选主模块等宽均分,无横向滚动 */}
-        <nav className="sticky bottom-0 z-30 flex shrink-0 items-stretch border-t border-cyan-400/15 bg-black/85 backdrop-blur-md lg:hidden">
-          {bottomTabs.map((item) => {
+        <main ref={mainRef} className="relative min-h-0 flex-1 overflow-auto">
+          <Outlet />
+        </main>
+
+        {/* 移动端底部导航:可横向滑动,项与顺序与左侧菜单栏(navGroups)完全一致
+            (对话→总览→人物→设定→大纲→章节→写作),不再精选子集;
+            置于 main 之后,由 flex 自然排到视口底部(不再用 sticky,避免覆盖内容区、
+            并让 main 占满中间区域,写作页等子页面的发送区得以真正贴底);
+            配色统一走主题变量(--sf-*),避免浅色主题下文字/底栏不可见 */}
+        <nav className="z-30 flex shrink-0 items-stretch overflow-x-auto border-t border-[var(--sf-border)] bg-[var(--sf-bg)]/90 backdrop-blur-md [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:hidden">
+          {navGroups.flatMap((g) => g.items).map((item) => {
             const Icon = item.icon;
             const label = item.short || item.label;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
+                // end:精确匹配,避免总览(/novels/:id)在子页面(如人物/设定)时仍被前缀匹配而常亮
+                end
                 className={({ isActive }) =>
-                  `flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs tracking-wider transition ${
-                    isActive ? 'text-cyan-300' : 'text-white/50'
+                  `relative flex w-[72px] flex-none flex-col items-center justify-center gap-0.5 px-1 py-2 text-xs tracking-wider transition ${
+                    isActive
+                      ? 'bg-[rgb(var(--sf-accent-r),var(--sf-accent-g),var(--sf-accent-b),0.1)] text-[var(--sf-accent)]'
+                      : 'text-[var(--sf-text-dim)] hover:text-[var(--sf-text)]'
                   }`
                 }
               >
-                <Icon className="h-5 w-5" />
-                <span className="w-full truncate text-center">{label}</span>
+                {({ isActive }) => (
+                  <>
+                    {/* 活跃态顶部细线,提升辨识度(替代原纯文字色区分) */}
+                    <span
+                      className={`absolute left-1/2 top-0 h-[2px] w-7 -translate-x-1/2 rounded-full transition ${
+                        isActive ? 'bg-[var(--sf-accent)] shadow-[0_0_6px_var(--sf-accent)]' : 'bg-transparent'
+                      }`}
+                    />
+                    <Icon className="h-5 w-5" />
+                    <span className="w-full truncate text-center">{label}</span>
+                  </>
+                )}
               </NavLink>
             );
           })}
         </nav>
-
-        <main ref={mainRef} className="relative min-h-0 flex-1 overflow-auto">
-          <Outlet />
-        </main>
       </div>
 
       {/* 桌面端侧边栏(右侧) */}
